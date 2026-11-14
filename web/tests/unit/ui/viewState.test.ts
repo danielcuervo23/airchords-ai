@@ -74,3 +74,28 @@ describe('toView', () => {
     expect(v.chord!.context).toBe('Do mayor · tono Re menor');
   });
 });
+
+describe('toView fan (muestrario)', () => {
+  it('free mode: seven swatches in the current key, the sounding one is "now"', () => {
+    const v = toView(base({ degree: 5, chord: chordForDegree(C, 5) }), { mode: 'free', key: C, song: null });
+    expect(v.fan.map((s) => s.numeral)).toEqual(['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°']);
+    expect(v.fan.map((s) => s.state)).toEqual(['rest', 'rest', 'rest', 'rest', 'now', 'rest', 'rest']);
+    expect(v.fan[0]).toMatchObject({ degree: 1, gel: 'var(--g1)', symbol: 'C' });
+    expect(v.fanLabel).toBe('Muestrario de acordes: ahora V');
+  });
+  it('guided mode: "now" is the step to play and "next" the following one, in the song key', () => {
+    const v = toView(
+      base({ guided: { index: 0, lastResult: 'wait', done: false, needsRearticulate: false } }),
+      { mode: 'guided', key: C, song },
+    );
+    expect(v.fan[3]!.state).toBe('now');
+    expect(v.fan[6]!.state).toBe('next');
+    expect(v.fan[3]!.symbol).toBe('Gm');
+    expect(v.fanLabel).toBe('Muestrario de acordes: ahora iv, después VII');
+  });
+  it('no chord: nothing is marked', () => {
+    const v = toView(base(), { mode: 'free', key: C, song: null });
+    expect(v.fan.every((s) => s.state === 'rest')).toBe(true);
+    expect(v.fanLabel).toBe('Muestrario de acordes');
+  });
+});
