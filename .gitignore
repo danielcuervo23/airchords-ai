@@ -1,0 +1,13 @@
+venv/
+venv312/
+__pycache__/
+*.wav
+Filtros/source/
+Filtros/textures/
+face_landmarker.task
+web/node_modules/
+web/dist/
+web/test-results/
+web/playwright-report/
+.superpowers/
+.vscode/
