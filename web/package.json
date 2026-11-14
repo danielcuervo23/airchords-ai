@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "predev": "npm run fetch:mediapipe",
+    "fetch:mediapipe": "node scripts/fetch-mediapipe.mjs",
+    "prebuild": "npm run fetch:mediapipe",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest run",
@@ -15,5 +18,8 @@
     "typescript": "7.0.2",
     "vite": "8.3.5",
     "vitest": "5.0.5"
+  },
+  "dependencies": {
+    "@mediapipe/tasks-vision": "1.2.0"
   }
 }
