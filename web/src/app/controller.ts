@@ -3,7 +3,6 @@ import { PRESETS, type PresetId } from '../audio/presets';
 import { assignHands } from '../gestures/assignHands';
 import { degreeFromGesture } from '../gestures/degree';
 import { ExpressionTracker, type Expression } from '../gestures/expression';
-import { MouthTrigger, mouthOpenness } from '../gestures/mouth';
 import { Stabilizer } from '../gestures/stabilizer';
 import type { Landmark } from '../gestures/types';
 import { chordForDegree, type Chord, type Degree, type Key } from '../music/theory';
@@ -26,15 +25,12 @@ export class InstrumentController {
   private key: Key;
   private mode: PlayMode = { kind: 'free' };
   private preset: PresetId = PRESETS[0]!.id;
-  /** Last preset asked for (may still be loading); the mouth cycles from here. */
-  private requested: PresetId = PRESETS[0]!.id;
   private presetToken = 0;
   private disposed = false;
   private lastFrameAt: number | null = null;
   private stalled = false;
   private stabilizer = new Stabilizer<Degree>({ minStableMs: MIN_STABLE_MS });
   private prevStable: Degree | null = null;
-  private readonly mouth = new MouthTrigger();
   private tracker: ExpressionTracker | null = null;
   private trackerAspect = 1;
   private expression: Expression = DEFAULT_EXPRESSION;
@@ -70,8 +66,6 @@ export class InstrumentController {
     const { chordHand, expressionHand } = assignHands(f.hands, { labelsSwapped: this.labelsSwapped });
     this.handsVisible = { chord: chordHand !== null, expression: expressionHand !== null };
     this.updateExpression(f.aspect, expressionHand?.landmarks ?? null);
-    // No face means the mouth is closed as far as we know, so the trigger re-arms.
-    if (this.mouth.update(f.face ? mouthOpenness(f.face.landmarks) : 0)) this.cyclePreset();
     if (this.mode.kind !== 'auto') this.handChord(degreeFromGesture(chordHand?.gesture ?? null), now);
     this.advance(now);
     this.emit();
@@ -117,13 +111,7 @@ export class InstrumentController {
 
   async setPreset(id: PresetId): Promise<void> {
     const token = ++this.presetToken;
-    this.requested = id;
-    try {
-      await this.engine.setPreset(id);
-    } catch (e) {
-      if (token === this.presetToken) this.requested = this.preset;
-      throw e;
-    }
+    await this.engine.setPreset(id); // on failure the current preset stays
     if (token !== this.presetToken || this.disposed) return; // a newer request won
     this.preset = id;
     this.emit();
@@ -244,14 +232,6 @@ export class InstrumentController {
     }
     this.expression = this.tracker.update(lm);
     this.engine.setExpression(this.expression);
-  }
-
-  private cyclePreset(): void {
-    const i = PRESETS.findIndex((p) => p.id === this.requested);
-    const next = PRESETS[(i + 1) % PRESETS.length]!.id;
-    this.setPreset(next).catch(() => {
-      /* keep the old preset */
-    });
   }
 
   private emit(): void {
