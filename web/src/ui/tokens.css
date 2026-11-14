@@ -1,0 +1,102 @@
+/*
+ * AirChords - design tokens (direccion B, "Gelatina").
+ * Source of truth: web/DESIGN.md. Derived from web/design/mockups/direccion-b.html.
+ * Tokens only: no selectors other than :root and the reduced-motion override.
+ */
+:root {
+  /* Surfaces: "telon" (aubergine, near black) */
+  --curtain: #1C1216;     /* page background */
+  --curtain-2: #2A1C22;   /* raised surface: pickers, switches, list rows */
+  --curtain-3: #3A2830;   /* hover surface, borders, tracks */
+  --curtain-deep: #120B0E; /* window chrome only */
+
+  /* Text ("tiza") */
+  --chalk: #F6EEE9;       /* primary text, 15.97:1 on --curtain */
+  --chalk-2: #CDBDC3;     /* secondary text, 10.16:1 on --curtain, 9.06:1 on --curtain-2 */
+  --ink: var(--curtain);  /* text placed ON a chord colour */
+
+  /* The 7 chord gels, indexed by scale degree. Each is a fill with --ink on top.
+     Ink-on-gel contrast: I 9.03, II 5.70, III 6.28, IV 8.42, V 7.10, VI 6.09, VII 12.60 */
+  --g1: #F5A623; /* I   C  amber */
+  --g2: #EF5B8C; /* II  Dm pink */
+  --g3: #A386EE; /* III Em violet */
+  --g4: #3FC59A; /* IV  F  mint */
+  --g5: #4AA8F0; /* V   G  sky */
+  --g6: #F26B4F; /* VI  Am coral */
+  --g7: #E8D86A; /* VII B  straw */
+
+  /* Active gel: set on the instrument root, e.g. style="--gel:var(--g2)". It drives the wash. */
+  --gel: var(--g2);
+
+  /* Interaction */
+  --focus: #F6EEE9;
+  --on-state: var(--g4);  /* toggle "on" track */
+
+  /* Scrims and backplates for anything over the camera video (min 0.78 alpha behind text) */
+  --scrim-top: rgba(28, 18, 22, 0.78);
+  --scrim-bottom: rgba(28, 18, 22, 0.92);
+  --plate: rgba(28, 18, 22, 0.82);       /* small pills over video (Espejo) */
+  --plate-soft: rgba(28, 18, 22, 0.78);  /* meters over video */
+  --glass: rgba(246, 238, 233, 0.12);    /* nav pills over video */
+  --glass-hover: rgba(246, 238, 233, 0.22);
+  --wash-opacity: 0.78;
+
+  /* Typography */
+  --font: "Archivo", system-ui, sans-serif;
+  --stretch-narrow: 75%;
+  --stretch-normal: 100%;
+  --stretch-wide: 125%;
+  --fs-xs: 0.75rem;   /* 12px: minimum for any functional text */
+  --fs-sm: 0.85rem;
+  --fs-md: 1rem;      /* 16px */
+  --fs-lg: 1.2rem;
+  --fs-xl: 1.4rem;
+  --fs-2xl: 1.8rem;
+  --fs-3xl: 2.55rem;
+  --fs-chord-phone: 92px;
+  --fs-chord-desk: 132px;
+  --fs-degree-phone: 28px;
+  --fs-degree-desk: 40px;
+
+  /* Spacing (4px base) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+
+  /* Radius */
+  --r-1: 6px;
+  --r-2: 8px;
+  --r-3: 10px;
+  --r-4: 12px;
+  --r-5: 14px;
+  --r-6: 16px;
+  --r-pill: 999px;
+
+  /* Sizing */
+  --tap-min: 44px;          /* minimum touch target */
+  --control-h: 52px;        /* pickers and switch */
+  --side-panel-w: 340px;    /* desktop side panel */
+  --focus-width: 3px;
+  --focus-offset: 3px;
+
+  /* Motion */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-light: 700ms;   /* the "cambio de luz": wash and degree badge */
+  --dur-book: 500ms;    /* fan swatches, cue rows */
+  --dur-ui: 300ms;      /* toggle, CTA */
+  --dur-hover: 250ms;   /* hover backgrounds */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-light: 0ms;
+    --dur-book: 0ms;
+    --dur-ui: 0ms;
+    --dur-hover: 0ms;
+  }
+}
