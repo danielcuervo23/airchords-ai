@@ -36,8 +36,10 @@ describe('samples', () => {
       expect(s).toMatch(/Fuente: https?:\/\//);
     }
   });
-  it('credits the Spider-Man model', () => {
-    expect(credits).toContain('Modelo 3D de uso libre, autor desconocido. Demo de fan sin fines comerciales.');
+  it('credits the Spider-Man mask drawing and the MediaPipe face mesh (Apache 2.0)', () => {
+    expect(credits).toContain('Dibujo 2D de la máscara de uso libre, autor desconocido. Demo de fan sin fines comerciales.');
+    expect(credits).toContain('canonical_face_model.obj');
+    expect(credits).toContain('Apache 2.0');
   });
   it('each instrument weighs at most 1.5 MB', () => {
     for (const f of folders) {
