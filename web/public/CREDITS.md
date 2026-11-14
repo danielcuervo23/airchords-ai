@@ -17,12 +17,15 @@
 ## Guitarra
 - Sintetizada en el navegador con PluckSynth de Tone.js (MIT, https://github.com/Tonejs/Tone.js). No usa muestras: no se encontró una fuente de guitarra con licencia CC0/CC-BY clara.
 
-## Máscara de Spider-Man (filters/spiderman-mask.webp)
-- Dibujo 2D de la máscara de uso libre, autor desconocido. Demo de fan sin fines comerciales.
-- Modificaciones: reducido a 768 px de ancho y convertido a WebP con transparencia (scripts/build-mask-image.mjs).
+## MediaPipe
+- Biblioteca @mediapipe/tasks-vision y los modelos gesture_recognizer y face_landmarker (manos y boca), que corren en tu dispositivo.
+- Autor: The MediaPipe Authors (Google)
+- Licencia: Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
+- Modificaciones: ninguna. Se copian tal cual a public/mediapipe (scripts/fetch-mediapipe.mjs).
+- Fuente: https://github.com/google-ai-edge/mediapipe
 
-## Malla de la cara (src/face/faceMesh.json)
-- Triángulos y coordenadas UV del modelo canónico de la cara de MediaPipe (canonical_face_model.obj).
-- Autor: The MediaPipe Authors (Google). Licencia: Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
-- Modificaciones: solo se conservan los triángulos y una UV por vértice (scripts/build-face-mesh.mjs). Aviso completo en src/face/faceMesh.LICENSE.txt
-- Fuente: https://github.com/google-ai-edge/mediapipe/blob/master/mediapipe/modules/face_geometry/data/canonical_face_model.obj
+## Tipografía
+- Archivo, de Omnibus-Type (The Archivo Project Authors).
+- Licencia: SIL Open Font License 1.1 (https://openfontlicense.org). El texto completo va junto a la fuente en src/ui/fonts/Archivo-OFL.txt.
+- Modificaciones: ninguna. Se incluye el archivo variable (subconjunto latino, ejes de ancho y peso) de @fontsource-variable/archivo 5.3.0.
+- Fuente: https://github.com/Omnibus-Type/Archivo

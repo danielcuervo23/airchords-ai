@@ -36,10 +36,13 @@ describe('samples', () => {
       expect(s).toMatch(/Fuente: https?:\/\//);
     }
   });
-  it('credits the Spider-Man mask drawing and the MediaPipe face mesh (Apache 2.0)', () => {
-    expect(credits).toContain('Dibujo 2D de la máscara de uso libre, autor desconocido. Demo de fan sin fines comerciales.');
-    expect(credits).toContain('canonical_face_model.obj');
-    expect(credits).toContain('Apache 2.0');
+  it('credits the bundled Archivo font (SIL OFL 1.1) and MediaPipe (Apache 2.0)', () => {
+    expect(section('Tipografía')).toMatch(/Archivo/);
+    expect(section('Tipografía')).toMatch(/SIL Open Font License 1\.1/);
+    expect(section('MediaPipe')).toMatch(/Apache 2\.0/);
+  });
+  it('no longer mentions the deferred face filter', () => {
+    expect(credits).not.toMatch(/Spider-Man|máscara|faceMesh|canonical_face_model/i);
   });
   it('each instrument weighs at most 1.5 MB', () => {
     for (const f of folders) {

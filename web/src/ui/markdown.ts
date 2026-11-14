@@ -52,22 +52,3 @@ export function parseMarkdown(src: string): Block[] {
   flush();
   return blocks;
 }
-
-const plain = (inline: Inline[]): string => inline.map((i) => i.text).join('');
-
-/** Removes each heading whose text matches, plus everything until the next heading of the same or higher level. */
-export function dropSections(blocks: Block[], match: (headingText: string) => boolean): Block[] {
-  const out: Block[] = [];
-  let dropLevel: number | null = null;
-  for (const b of blocks) {
-    if (b.type === 'heading') {
-      if (dropLevel !== null && b.level <= dropLevel) dropLevel = null;
-      if (dropLevel === null && match(plain(b.inline))) {
-        dropLevel = b.level;
-        continue;
-      }
-    }
-    if (dropLevel === null) out.push(b);
-  }
-  return out;
-}

@@ -1,17 +1,6 @@
 import { h } from './dom';
 import { navPill, wordmark } from './instrument-chrome';
-import { dropSections, parseMarkdown, type Block, type Inline } from './markdown';
-
-/** Sections of CREDITS.md that describe features not shipped in this version (the face filter is deferred). */
-const HIDDEN_SECTION = /spider-man/i;
-
-/** Archivo is bundled with the app; its licence travels with the font file (src/ui/fonts). */
-const FONT_CREDIT = [
-  '## Tipografía',
-  '- Archivo, de Omnibus-Type (The Archivo Project Authors).',
-  '- Licencia: SIL Open Font License 1.1 (https://openfontlicense.org)',
-  '- Se incluye el archivo de la fuente en la app, sin cambios.',
-].join('\n');
+import { parseMarkdown, type Block, type Inline } from './markdown';
 
 function inline(parts: Inline[]): Node[] {
   return parts.map((p) =>
@@ -44,9 +33,7 @@ export function creditsScreen(onClose: () => void): { el: HTMLElement; load(): P
     try {
       const res = await fetch(`${import.meta.env.BASE_URL}CREDITS.md`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const text = `${await res.text()}\n\n${FONT_CREDIT}`;
-      const blocks = dropSections(parseMarkdown(text), (t) => HIDDEN_SECTION.test(t));
-      body.replaceChildren(...render(blocks));
+      body.replaceChildren(...render(parseMarkdown(await res.text())));
       loaded = true;
     } catch {
       const retry = h('button', { type: 'button', class: 'btn-primary' }, 'Reintentar');

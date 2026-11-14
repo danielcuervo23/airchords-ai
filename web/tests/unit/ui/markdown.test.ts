@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dropSections, parseMarkdown } from '../../../src/ui/markdown';
+import { parseMarkdown } from '../../../src/ui/markdown';
 
 describe('parseMarkdown (minimal, safe)', () => {
   it('reads headings, list items and paragraphs', () => {
@@ -27,12 +27,5 @@ describe('parseMarkdown (minimal, safe)', () => {
       type: 'paragraph',
       inline: [{ type: 'text', text: '<img src=x onerror=alert(1)> javascript:alert(1) http://x.test' }],
     });
-  });
-  it('drops a whole section (heading and its content) by heading text', () => {
-    const blocks = parseMarkdown('## A\n- uno\n## Quitar esto\n- dos\n\nmás\n## B\n- tres');
-    const kept = dropSections(blocks, (t) => t.includes('Quitar'));
-    expect(kept.map((b) => b.type)).toEqual(['heading', 'list', 'heading', 'list']);
-    expect(JSON.stringify(kept)).not.toContain('dos');
-    expect(JSON.stringify(kept)).not.toContain('más');
   });
 });
