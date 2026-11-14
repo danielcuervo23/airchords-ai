@@ -88,6 +88,7 @@ Lo eligió Claude, por delegación del usuario ("1").
 - Repite una progresión de acordes en la tonalidad y con el sonido elegidos, con tempo ajustable (por ejemplo 60–160 BPM). Mientras suena, las manos del usuario siguen controlando el volumen y la expresión.
 
 ### 8.5 Filtro de Spider-Man
+- **Actualización (decisión del usuario, 2026-11-14):** el casco 3D se reemplaza por una máscara 2D (`Filtros/spiderman.png`) deformada sobre la malla facial de 468 puntos de FaceLandmarker (estilo filtros de Instagram/Snapchat): se ajusta a la forma y gestos de la cara, conserva los colores y pesa ~200 KB. Lo de abajo sobre three.js/GLB queda obsoleto.
 - three.js sobre el video, usando la matriz de transformación facial de FaceLandmarker y suavizado de la pose (el Python ya usa un alpha de 0,55). La calibración de reposo (escala 22,37, traslación [0, 2,5, −1,5], rotación 0) sale del programa Python y se reajusta para la web.
 - El modelo se comprime (geometría y texturas más pequeñas) hasta ≤ 3 MB y **se carga solo cuando el usuario activa el filtro**, para no retrasar el inicio.
 - La detección de cara corre siempre, porque también la usa el gesto de la boca, pero con un costo moderado (puede ir a menos cuadros por segundo que la de manos).
