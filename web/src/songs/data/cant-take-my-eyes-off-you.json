@@ -2,24 +2,107 @@
   "id": "cant-take-my-eyes-off-you",
   "title": "Can't Take My Eyes Off You",
   "artist": "Bob Crewe & Bob Gaudio",
-  "key": { "tonic": "C", "mode": "major" },
-  "bpm": 112,
+  "key": {
+    "tonic": "E",
+    "mode": "major"
+  },
+  "bpm": 123,
   "steps": [
-    { "degree": 1, "beats": 4, "note": "Original: Cmaj7 → I." },
-    { "degree": 1, "beats": 4, "note": "Original: C6/C7 → I." },
-    { "degree": 2, "beats": 4, "note": "Original: Dm7 → ii." },
-    { "degree": 2, "beats": 4, "note": "Original: Dm7 → ii." },
-    { "degree": 3, "beats": 4, "note": "Original: Em7 → iii." },
-    { "degree": 3, "beats": 4, "note": "Original: Em7 → iii." },
-    { "degree": 4, "beats": 4, "note": "Original: Fmaj7 → IV." },
-    { "degree": 4, "beats": 4, "note": "Original: Fm (iv prestado) → IV. Aproximado." },
-    { "degree": 1, "beats": 4, "note": "Original: C/E → I." },
-    { "degree": 6, "beats": 4, "note": "Original: A7 (dominante secundaria) → vi." },
-    { "degree": 2, "beats": 4, "note": "Original: Dm7 → ii." },
-    { "degree": 5, "beats": 4, "note": "Original: G7 → V." },
-    { "degree": 1, "beats": 4 },
-    { "degree": 4, "beats": 4 },
-    { "degree": 5, "beats": 4 },
-    { "degree": 1, "beats": 4, "note": "Cierre simplificado; plausible, sin certeza total." }
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Original (E mayor): E → I"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Original: Emaj7 → I"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Original: E7 → I"
+    },
+    {
+      "degree": 4,
+      "beats": 4,
+      "note": "Original: A → IV"
+    },
+    {
+      "degree": 4,
+      "beats": 4,
+      "note": "Original: Adim7 → IV"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Original: E → I"
+    },
+    {
+      "degree": 2,
+      "beats": 4,
+      "note": "Original: F#7 (dominante secundaria) → ii"
+    },
+    {
+      "degree": 2,
+      "beats": 4,
+      "note": "Original: F#m7b5 → ii"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Original: Emaj7 → I"
+    },
+    {
+      "degree": 2,
+      "beats": 4,
+      "note": "Estribillo. Original: F#m7 → ii"
+    },
+    {
+      "degree": 5,
+      "beats": 4,
+      "note": "Original: B7b9 → V"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Original: Emaj7#5 → I"
+    },
+    {
+      "degree": 6,
+      "beats": 4,
+      "note": "Original: C#7 (dominante secundaria) → vi"
+    },
+    {
+      "degree": 2,
+      "beats": 4
+    },
+    {
+      "degree": 5,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Original: Emaj7/G# → I"
+    },
+    {
+      "degree": 6,
+      "beats": 4
+    },
+    {
+      "degree": 2,
+      "beats": 4
+    },
+    {
+      "degree": 4,
+      "beats": 4,
+      "note": "Original: D7 (prestado, bVII) → IV"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Cierre: resuelto a I"
+    }
   ]
 }

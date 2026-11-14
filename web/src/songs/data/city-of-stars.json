@@ -2,24 +2,151 @@
   "id": "city-of-stars",
   "title": "City of Stars",
   "artist": "Justin Hurwitz (La La Land)",
-  "key": { "tonic": "C", "mode": "major" },
-  "bpm": 84,
+  "key": {
+    "tonic": "D",
+    "mode": "minor"
+  },
+  "bpm": 100,
   "steps": [
-    { "degree": 4, "beats": 4, "note": "Original: acorde de séptima mayor (Fmaj7) → IV. Transcripción aproximada, sin certeza total." },
-    { "degree": 3, "beats": 4, "note": "Original: Em7 → iii. Aproximado." },
-    { "degree": 2, "beats": 4, "note": "Original: Dm7 → ii. Aproximado." },
-    { "degree": 5, "beats": 4, "note": "Original: G7 → V." },
-    { "degree": 1, "beats": 4, "note": "Original: Cmaj7 → I." },
-    { "degree": 6, "beats": 4, "note": "Original: Am7 → vi. Aproximado." },
-    { "degree": 4, "beats": 4, "note": "Original: Fmaj7 → IV. Aproximado." },
-    { "degree": 5, "beats": 4, "note": "Original: G (o G7sus) → V. Aproximado." },
-    { "degree": 4, "beats": 4 },
-    { "degree": 3, "beats": 4 },
-    { "degree": 2, "beats": 4 },
-    { "degree": 5, "beats": 4 },
-    { "degree": 1, "beats": 4 },
-    { "degree": 6, "beats": 4 },
-    { "degree": 2, "beats": 4, "note": "Cierre simplificado, elegido por ser la opción diatónica más simple y plausible." },
-    { "degree": 1, "beats": 4 }
+    {
+      "degree": 4,
+      "beats": 4,
+      "note": "Original (D menor): Gm7 → iv"
+    },
+    {
+      "degree": 7,
+      "beats": 4,
+      "note": "Original: C7 → VII (sin la 7a)"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Original: Dm7 → i"
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    },
+    {
+      "degree": 4,
+      "beats": 4
+    },
+    {
+      "degree": 7,
+      "beats": 4
+    },
+    {
+      "degree": 3,
+      "beats": 4,
+      "note": "Original: F → III"
+    },
+    {
+      "degree": 3,
+      "beats": 4
+    },
+    {
+      "degree": 4,
+      "beats": 4
+    },
+    {
+      "degree": 7,
+      "beats": 4
+    },
+    {
+      "degree": 3,
+      "beats": 4,
+      "note": "Original: Fmaj7/F7 → III"
+    },
+    {
+      "degree": 3,
+      "beats": 4
+    },
+    {
+      "degree": 4,
+      "beats": 4
+    },
+    {
+      "degree": 5,
+      "beats": 4,
+      "note": "Original: A7 (dominante) → v menor natural"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Original: Dm → i"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Original: Dm/C → i"
+    },
+    {
+      "degree": 6,
+      "beats": 4,
+      "note": "Estribillo. Original: Bb → VI"
+    },
+    {
+      "degree": 7,
+      "beats": 4,
+      "note": "Original: C7 → VII"
+    },
+    {
+      "degree": 5,
+      "beats": 4,
+      "note": "Original: A7 → v menor natural"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Original: Dm7 → i"
+    },
+    {
+      "degree": 6,
+      "beats": 4
+    },
+    {
+      "degree": 7,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    },
+    {
+      "degree": 6,
+      "beats": 4
+    },
+    {
+      "degree": 7,
+      "beats": 4
+    },
+    {
+      "degree": 5,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    },
+    {
+      "degree": 6,
+      "beats": 4
+    },
+    {
+      "degree": 5,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    }
   ]
 }
