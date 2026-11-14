@@ -1,4 +1,4 @@
-// Dev-only page: webcam + Spider-Man mask, to eyeball that it follows the head.
+// Dev-only page: webcam + Spider-Man face paint, to eyeball that it follows the face.
 import { Tracker } from '../vision/tracker';
 
 const video = document.getElementById('video') as HTMLVideoElement;
@@ -10,7 +10,7 @@ async function main(): Promise<void> {
     video.srcObject = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
     await video.play();
     const { FaceFilter } = await import('../face/filter'); // loaded only now
-    const filter = await FaceFilter.load(canvas, `${import.meta.env.BASE_URL}models/spiderman.glb`);
+    const filter = await FaceFilter.load(canvas, `${import.meta.env.BASE_URL}filters/spiderman-mask.webp`);
     const tracker = await Tracker.create(video, { faceEveryNFrames: 1 });
     window.addEventListener('pagehide', () => {
       tracker.close();
