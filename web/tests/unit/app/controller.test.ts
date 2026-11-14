@@ -1,0 +1,301 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+import { InstrumentController, type ControllerState } from '../../../src/app/controller';
+import type { SoundEngine } from '../../../src/audio/engine';
+import { PRESETS, type PresetId } from '../../../src/audio/presets';
+import { chordForDegree, type Chord, type Key } from '../../../src/music/theory';
+import type { RawHand } from '../../../src/gestures/assignHands';
+import type { GestureName } from '../../../src/gestures/types';
+import type { Expression } from '../../../src/gestures/expression';
+import type { Song } from '../../../src/songs/types';
+import type { VisionFrame } from '../../../src/vision/tracker';
+
+class FakeEngine implements SoundEngine {
+  calls: string[] = [];
+  chords: Chord[] = [];
+  expressions: Expression[] = [];
+  presets: PresetId[] = [];
+  bpms: number[] = [];
+  failPreset = false;
+  async start(): Promise<void> { this.calls.push('start'); }
+  async setPreset(id: PresetId): Promise<void> {
+    this.calls.push('setPreset');
+    this.presets.push(id);
+    if (this.failPreset) throw new Error('boom');
+  }
+  playChord(c: Chord): void { this.calls.push('playChord'); this.chords.push(c); }
+  release(): void { this.calls.push('release'); }
+  setExpression(e: Expression): void { this.calls.push('setExpression'); this.expressions.push(e); }
+  setBpm(b: number): void { this.calls.push('setBpm'); this.bpms.push(b); }
+  dispose(): void { this.calls.push('dispose'); }
+  count(name: string): number { return this.calls.filter((c) => c === name).length; }
+}
+
+const C_MAJOR: Key = { tonic: 'C', mode: 'major' };
+const G_MAJOR: Key = { tonic: 'G', mode: 'major' };
+
+function hand(label: 'Left' | 'Right', gesture: GestureName | null = null): RawHand {
+  const landmarks = Array.from({ length: 21 }, (_, i) => ({ x: 0.3 + i * 0.01, y: 0.5, z: 0 }));
+  return { label, score: 0.9, landmarks, gesture: gesture ? { name: gesture, score: 0.9 } : null };
+}
+
+function faceLandmarks(open: boolean) {
+  const lm = Array.from({ length: 478 }, () => ({ x: 0.5, y: 0.5, z: 0 }));
+  lm[13] = { x: 0.5, y: 0.5, z: 0 };
+  lm[14] = { x: 0.5, y: open ? 0.6 : 0.5, z: 0 };
+  lm[61] = { x: 0.4, y: 0.55, z: 0 };
+  lm[291] = { x: 0.5, y: 0.55, z: 0 };
+  return lm;
+}
+
+function frame(hands: RawHand[], face: VisionFrame['face'] = null, aspect = 4 / 3): VisionFrame {
+  return { t: 0, aspect, hands, face };
+}
+const faceFrame = (open: boolean): VisionFrame['face'] => ({ landmarks: faceLandmarks(open), matrix: new Float32Array(16) });
+
+const song: Song = {
+  id: 's', title: 's', artist: 'a', key: G_MAJOR, bpm: 120,
+  steps: [{ degree: 1, beats: 2 }, { degree: 4, beats: 2 }, { degree: 5, beats: 4 }],
+};
+
+describe('InstrumentController', () => {
+  let engine: FakeEngine;
+  let clock: number;
+  let c: InstrumentController;
+  const at = (ms: number, f: VisionFrame) => { clock = ms; c.onFrame(f); };
+
+  beforeEach(() => {
+    engine = new FakeEngine();
+    clock = 0;
+    c = new InstrumentController({ engine, now: () => clock, key: C_MAJOR });
+  });
+
+  describe('free mode', () => {
+    it('plays the chord once after the degree is stable for 80 ms', () => {
+      const f = frame([hand('Right', 'Thumb_Up')]);
+      at(0, f); at(40, f);
+      expect(engine.count('playChord')).toBe(0);
+      at(80, f); at(120, f); at(200, f);
+      expect(engine.chords).toEqual([chordForDegree(C_MAJOR, 4)]);
+    });
+
+    it('releases once when the chord hand disappears for 80 ms; a single odd frame changes nothing', () => {
+      const up = frame([hand('Right', 'Thumb_Up')]);
+      at(0, up); at(80, up);
+      at(100, frame([hand('Right', 'Victory')]));
+      at(120, up);
+      expect(engine.count('release')).toBe(0);
+      expect(engine.count('playChord')).toBe(1);
+      at(200, frame([])); at(250, frame([])); at(280, frame([])); at(400, frame([]));
+      expect(engine.count('release')).toBe(1);
+    });
+
+    it('the physical right hand (label Right, labelsSwapped false) is the chord hand', () => {
+      const f = frame([hand('Left', 'Victory'), hand('Right', 'Open_Palm')]);
+      at(0, f); at(100, f);
+      expect(engine.chords[0]).toEqual(chordForDegree(C_MAJOR, 5));
+    });
+
+    it('labelsSwapped true makes label Left the chord hand', () => {
+      const c2 = new InstrumentController({ engine, now: () => clock, key: C_MAJOR, labelsSwapped: true });
+      const f = frame([hand('Left', 'Victory'), hand('Right', 'Open_Palm')]);
+      clock = 0; c2.onFrame(f); clock = 100; c2.onFrame(f);
+      expect(engine.chords[0]).toEqual(chordForDegree(C_MAJOR, 2));
+    });
+
+    it('setKey affects free mode and replays a sounding chord in the new key', () => {
+      const f = frame([hand('Right', 'Thumb_Up')]);
+      at(0, f); at(100, f);
+      c.setKey(G_MAJOR);
+      expect(engine.chords.at(-1)).toEqual(chordForDegree(G_MAJOR, 4));
+      expect(engine.count('playChord')).toBe(2);
+    });
+
+    it('setKey with nothing sounding does not play', () => {
+      c.setKey(G_MAJOR);
+      expect(engine.count('playChord')).toBe(0);
+    });
+  });
+
+  describe('expression', () => {
+    it('calls setExpression every frame, driven by the other hand', () => {
+      at(0, frame([hand('Left')])); at(16, frame([hand('Left')])); at(32, frame([]));
+      expect(engine.count('setExpression')).toBe(3);
+    });
+
+    it('recreates the tracker when the aspect changes by more than 1%', () => {
+      const tilted = hand('Left');
+      tilted.landmarks[5] = { x: 0.3, y: 0.4, z: 0 };
+      tilted.landmarks[17] = { x: 0.5, y: 0.6, z: 0 };
+      const mk = () => new InstrumentController({ engine: new FakeEngine(), now: () => 0, key: C_MAJOR });
+      const a = mk();
+      const b = mk();
+      a.onFrame(frame([tilted], null, 1.0));
+      a.onFrame(frame([tilted], null, 2.0));
+      b.onFrame(frame([tilted], null, 2.0));
+      // a fresh tracker at 2.0 and a recreated one see the first frame at 2.0 the same way
+      const fresh = b.getState().expression.brightness;
+      const reset = new InstrumentController({ engine: new FakeEngine(), now: () => 0, key: C_MAJOR });
+      reset.onFrame(frame([tilted], null, 1.0));
+      reset.onFrame(frame([tilted], null, 2.0));
+      expect(reset.getState().expression.brightness).toBeCloseTo(fresh, 10);
+      expect(a.getState().expression.brightness).toBeCloseTo(fresh, 10);
+    });
+  });
+
+  describe('mouth', () => {
+    it('cycles to the next preset on a rising edge only', () => {
+      at(0, frame([], faceFrame(true)));
+      at(16, frame([], faceFrame(true)));
+      expect(engine.presets).toEqual([PRESETS[1]!.id]);
+      at(32, frame([], faceFrame(false)));
+      at(48, frame([], faceFrame(true)));
+      expect(engine.presets).toEqual([PRESETS[1]!.id, PRESETS[2]!.id]);
+    });
+
+    it('wraps from the last preset to the first', async () => {
+      await c.setPreset(PRESETS.at(-1)!.id);
+      engine.presets = [];
+      at(0, frame([], faceFrame(true)));
+      expect(engine.presets).toEqual([PRESETS[0]!.id]);
+    });
+
+    it('keeps the old preset when setPreset rejects', async () => {
+      engine.failPreset = true;
+      at(0, frame([], faceFrame(true)));
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(c.getState().preset).toBe(PRESETS[0]!.id);
+    });
+
+    it('updates the state preset when setPreset succeeds', async () => {
+      await c.setPreset('cristal');
+      expect(c.getState().preset).toBe('cristal');
+    });
+  });
+
+  describe('guided mode', () => {
+    beforeEach(() => { c.setMode({ kind: 'guided', song }); });
+
+    it('a wrong degree plays nothing; the correct one is a hit and sounds in the song key', () => {
+      const wrong = frame([hand('Right', 'Thumb_Up')]);
+      at(0, wrong); at(100, wrong);
+      expect(engine.count('playChord')).toBe(0);
+      expect(c.getState().guided).toMatchObject({ index: 0, lastResult: 'wait' });
+      const right = frame([hand('Right', 'Pointing_Up')]);
+      at(200, right); at(300, right);
+      expect(engine.chords).toEqual([chordForDegree(G_MAJOR, 1)]);
+      expect(c.getState().guided).toMatchObject({ index: 1, lastResult: 'hit' });
+    });
+
+    it('releases after the step beats elapse (2 beats at 120 bpm = 1000 ms)', () => {
+      const right = frame([hand('Right', 'Pointing_Up')]);
+      at(0, right); at(100, right);
+      const before = engine.count('release');
+      at(1000, right);
+      expect(engine.count('release')).toBe(before);
+      at(1100, right);
+      expect(engine.count('release')).toBe(before + 1);
+      at(1200, right);
+      expect(engine.count('release')).toBe(before + 1);
+    });
+
+    it('reports done when the song finishes', () => {
+      const g = (n: GestureName) => frame([hand('Right', n)]);
+      let t = 0;
+      for (const n of ['Pointing_Up', 'Thumb_Up', 'Open_Palm'] as GestureName[]) {
+        at(t, g(n)); t += 100; at(t, g(n)); t += 100;
+        at(t, frame([])); t += 100; at(t, frame([])); t += 100;
+      }
+      expect(c.getState().guided?.done).toBe(true);
+    });
+  });
+
+  describe('auto mode', () => {
+    beforeEach(() => { clock = 0; c.setMode({ kind: 'auto', song }); });
+
+    it('sets bpm, plays chords from stepAtBeat and keeps driving expression', () => {
+      expect(engine.bpms).toEqual([120]);
+      const f = frame([hand('Left')]);
+      at(0, f);
+      expect(engine.chords).toEqual([chordForDegree(G_MAJOR, 1)]);
+      at(500, f);
+      expect(engine.count('playChord')).toBe(1);
+      at(1000, f);
+      expect(engine.chords.at(-1)).toEqual(chordForDegree(G_MAJOR, 4));
+      expect(engine.count('setExpression')).toBe(3);
+    });
+
+    it('chord hand gestures do not change what plays', () => {
+      at(0, frame([hand('Right', 'Victory')]));
+      expect(engine.chords).toEqual([chordForDegree(G_MAJOR, 1)]);
+    });
+
+    it('pause releases and freezes the beat clock; resume continues from the same beat', () => {
+      const f = frame([]);
+      at(0, f);
+      at(900, f);
+      clock = 900;
+      c.onVisibilityChange(true);
+      expect(engine.count('release')).toBeGreaterThanOrEqual(1);
+      const plays = engine.count('playChord');
+      at(5000, f);
+      expect(engine.count('playChord')).toBe(plays);
+      clock = 5000;
+      c.onVisibilityChange(false);
+      at(5100, f); // beat = (900 + 100) * 120 / 60000 = 2 -> degree 4
+      expect(engine.chords.at(-1)).toEqual(chordForDegree(G_MAJOR, 4));
+    });
+  });
+
+  describe('visibility and lifecycle', () => {
+    it('releases on hidden in free mode', () => {
+      c.onVisibilityChange(true);
+      expect(engine.count('release')).toBe(1);
+    });
+
+    it('setMode releases and notifies', () => {
+      const seen: ControllerState[] = [];
+      c.subscribe((s) => seen.push(s));
+      c.setMode({ kind: 'guided', song });
+      expect(engine.count('release')).toBe(1);
+      expect(seen.length).toBe(1);
+      expect(seen[0]!.guided).toMatchObject({ index: 0, lastResult: 'wait' });
+    });
+
+    it('dispose disposes the engine and clears subscribers', () => {
+      const seen: ControllerState[] = [];
+      c.subscribe((s) => seen.push(s));
+      c.dispose();
+      expect(engine.count('dispose')).toBe(1);
+      at(0, frame([hand('Right', 'Thumb_Up')]));
+      at(100, frame([hand('Right', 'Thumb_Up')]));
+      expect(seen).toEqual([]);
+    });
+  });
+
+  describe('subscribers', () => {
+    it('are not called on identical frames, are on change, and unsubscribe works', () => {
+      const seen: ControllerState[] = [];
+      const off = c.subscribe((s) => seen.push(s));
+      const f = frame([hand('Right', 'Thumb_Up')]);
+      at(0, f);
+      const afterFirst = seen.length;
+      at(100, f);
+      expect(seen.length).toBeGreaterThan(afterFirst);
+      const n = seen.length;
+      at(200, f); at(300, f);
+      expect(seen.length).toBe(n);
+      off();
+      at(400, frame([])); at(500, frame([]));
+      expect(seen.length).toBe(n);
+    });
+  });
+
+  describe('robustness', () => {
+    it('never throws on empty hands, null face or NaN aspect', () => {
+      expect(() => at(0, frame([], null, NaN))).not.toThrow();
+      expect(() => at(10, frame([hand('Left', 'Victory')], null, NaN))).not.toThrow();
+      expect(() => at(20, frame([], null, 0))).not.toThrow();
+    });
+  });
+});
