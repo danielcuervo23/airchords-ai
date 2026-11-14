@@ -1,0 +1,25 @@
+{
+  "id": "cant-take-my-eyes-off-you",
+  "title": "Can't Take My Eyes Off You",
+  "artist": "Bob Crewe & Bob Gaudio",
+  "key": { "tonic": "C", "mode": "major" },
+  "bpm": 112,
+  "steps": [
+    { "degree": 1, "beats": 4, "note": "Original: Cmaj7 → I." },
+    { "degree": 1, "beats": 4, "note": "Original: C6/C7 → I." },
+    { "degree": 2, "beats": 4, "note": "Original: Dm7 → ii." },
+    { "degree": 2, "beats": 4, "note": "Original: Dm7 → ii." },
+    { "degree": 3, "beats": 4, "note": "Original: Em7 → iii." },
+    { "degree": 3, "beats": 4, "note": "Original: Em7 → iii." },
+    { "degree": 4, "beats": 4, "note": "Original: Fmaj7 → IV." },
+    { "degree": 4, "beats": 4, "note": "Original: Fm (iv prestado) → IV. Aproximado." },
+    { "degree": 1, "beats": 4, "note": "Original: C/E → I." },
+    { "degree": 6, "beats": 4, "note": "Original: A7 (dominante secundaria) → vi." },
+    { "degree": 2, "beats": 4, "note": "Original: Dm7 → ii." },
+    { "degree": 5, "beats": 4, "note": "Original: G7 → V." },
+    { "degree": 1, "beats": 4 },
+    { "degree": 4, "beats": 4 },
+    { "degree": 5, "beats": 4 },
+    { "degree": 1, "beats": 4, "note": "Cierre simplificado; plausible, sin certeza total." }
+  ]
+}

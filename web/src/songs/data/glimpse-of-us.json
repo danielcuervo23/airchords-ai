@@ -1,0 +1,25 @@
+{
+  "id": "glimpse-of-us",
+  "title": "Glimpse of Us",
+  "artist": "Joji",
+  "key": { "tonic": "C", "mode": "major" },
+  "bpm": 93,
+  "steps": [
+    { "degree": 4, "beats": 4, "note": "Original: Fmaj7 → IV. Tonalidad y acordes aproximados, sin certeza total." },
+    { "degree": 5, "beats": 4, "note": "Original: G → V. Aproximado." },
+    { "degree": 3, "beats": 4, "note": "Original: Em7 → iii. Aproximado." },
+    { "degree": 6, "beats": 4, "note": "Original: Am → vi. Aproximado." },
+    { "degree": 4, "beats": 4 },
+    { "degree": 5, "beats": 4 },
+    { "degree": 3, "beats": 4 },
+    { "degree": 6, "beats": 4 },
+    { "degree": 4, "beats": 4 },
+    { "degree": 5, "beats": 4 },
+    { "degree": 6, "beats": 4 },
+    { "degree": 1, "beats": 4, "note": "Resolución simplificada a I, elegida por ser la opción diatónica más simple." },
+    { "degree": 4, "beats": 4 },
+    { "degree": 5, "beats": 4 },
+    { "degree": 3, "beats": 4 },
+    { "degree": 6, "beats": 4 }
+  ]
+}
