@@ -7,6 +7,7 @@ Filtros/textures/
 face_landmarker.task
 web/node_modules/
 web/dist/
+web/public/mediapipe/
 web/test-results/
 web/playwright-report/
 .superpowers/
