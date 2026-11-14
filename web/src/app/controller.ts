@@ -16,6 +16,7 @@ export type { ControllerState, PlayMode } from './state';
 
 const MIN_STABLE_MS = 80;
 const ASPECT_TOLERANCE = 0.01;
+const WATCHDOG_MS = 500;
 const DEFAULT_EXPRESSION: Expression = { volume: 0.7, brightness: 0.5 };
 
 export class InstrumentController {
@@ -27,6 +28,10 @@ export class InstrumentController {
   private preset: PresetId = PRESETS[0]!.id;
   /** Last preset asked for (may still be loading); the mouth cycles from here. */
   private requested: PresetId = PRESETS[0]!.id;
+  private presetToken = 0;
+  private disposed = false;
+  private lastFrameAt: number | null = null;
+  private stalled = false;
   private stabilizer = new Stabilizer<Degree>({ minStableMs: MIN_STABLE_MS });
   private prevStable: Degree | null = null;
   private readonly mouth = new MouthTrigger();
@@ -39,6 +44,7 @@ export class InstrumentController {
   private session: GuidedSession | null = null;
   private guidedIndex = 0;
   private lastResult: 'hit' | 'wait' = 'wait';
+  private awaitingRearticulate = false;
   private soundingUntil = 0;
   // auto
   private clockStart = 0;
@@ -57,13 +63,30 @@ export class InstrumentController {
   }
 
   onFrame(f: VisionFrame): void {
+    if (this.disposed) return;
     const now = this.now();
+    this.lastFrameAt = now;
+    this.stalled = false;
     const { chordHand, expressionHand } = assignHands(f.hands, { labelsSwapped: this.labelsSwapped });
     this.handsVisible = { chord: chordHand !== null, expression: expressionHand !== null };
     this.updateExpression(f.aspect, expressionHand?.landmarks ?? null);
-    if (f.face && this.mouth.update(mouthOpenness(f.face.landmarks))) this.cyclePreset();
-    if (this.mode.kind === 'auto') this.autoTick(this.mode.song, now);
-    else this.handChord(degreeFromGesture(chordHand?.gesture ?? null), now);
+    // No face means the mouth is closed as far as we know, so the trigger re-arms.
+    if (this.mouth.update(f.face ? mouthOpenness(f.face.landmarks) : 0)) this.cyclePreset();
+    if (this.mode.kind !== 'auto') this.handChord(degreeFromGesture(chordHand?.gesture ?? null), now);
+    this.advance(now);
+    this.emit();
+  }
+
+  /** Call from requestAnimationFrame: timing must not depend on the camera frame rate. */
+  tick(nowMs: number = this.now()): void {
+    if (this.disposed || this.pausedAt !== null) return;
+    if (this.lastFrameAt !== null && !this.stalled && nowMs - this.lastFrameAt > WATCHDOG_MS) {
+      this.stalled = true;
+      this.handsVisible = { chord: false, expression: false };
+      // Auto mode does not need the hands, so the song keeps going.
+      if (this.mode.kind !== 'auto') this.silence();
+    }
+    this.advance(nowMs);
     this.emit();
   }
 
@@ -72,12 +95,15 @@ export class InstrumentController {
     const state: ControllerState = {
       degree,
       chord: this.sounding,
-      expression: this.expression,
+      expression: { ...this.expression },
       preset: this.preset,
       handsVisible: { ...this.handsVisible },
     };
     if (this.mode.kind === 'guided') {
-      state.guided = { index: this.guidedIndex, lastResult: this.lastResult, done: this.session?.isDone() ?? false };
+      const done = this.session?.isDone() ?? false;
+      const needsRearticulate =
+        this.awaitingRearticulate && !done && degree !== null && this.session?.current().degree === degree;
+      state.guided = { index: this.guidedIndex, lastResult: this.lastResult, done, needsRearticulate };
     }
     return state;
   }
@@ -90,27 +116,35 @@ export class InstrumentController {
   }
 
   async setPreset(id: PresetId): Promise<void> {
+    const token = ++this.presetToken;
     this.requested = id;
     try {
       await this.engine.setPreset(id);
     } catch (e) {
-      this.requested = this.preset;
+      if (token === this.presetToken) this.requested = this.preset;
       throw e;
     }
+    if (token !== this.presetToken || this.disposed) return; // a newer request won
     this.preset = id;
     this.emit();
   }
 
   setMode(m: PlayMode): void {
+    // Validate and build everything first: on bad input the previous mode stays intact.
+    if (m.kind !== 'free' && !(Number.isFinite(m.song.bpm) && m.song.bpm > 0)) {
+      throw new Error(`Invalid bpm: ${m.song.bpm}`);
+    }
+    const session = m.kind === 'guided' ? new GuidedSession(m.song) : null;
     this.silence();
     this.mode = m;
-    this.session = m.kind === 'guided' ? new GuidedSession(m.song) : null;
+    this.session = session;
     this.guidedIndex = 0;
     this.lastResult = 'wait';
+    this.awaitingRearticulate = false;
     this.autoIndex = -1;
     this.autoDegree = null;
-    this.pausedAt = null;
     this.clockStart = this.now();
+    if (this.pausedAt !== null) this.pausedAt = this.clockStart; // stay paused, beat 0 on resume
     if (m.kind === 'auto') this.engine.setBpm(m.song.bpm);
     this.emit();
   }
@@ -136,6 +170,7 @@ export class InstrumentController {
   }
 
   dispose(): void {
+    this.disposed = true;
     this.engine.dispose();
     this.listeners.clear();
   }
@@ -162,9 +197,9 @@ export class InstrumentController {
   private handChord(raw: Degree | null, now: number): void {
     if (this.pausedAt !== null) return;
     const stable = this.stabilizer.update(raw, now);
-    if (this.mode.kind === 'guided' && this.sounding && now >= this.soundingUntil) this.release();
     if (stable === this.prevStable) return;
     this.prevStable = stable;
+    this.awaitingRearticulate = false; // any change of the stable gesture counts as re-articulating
     if (this.mode.kind === 'free') {
       if (stable === null) this.release();
       else this.play(chordForDegree(this.key, stable));
@@ -180,12 +215,19 @@ export class InstrumentController {
     this.lastResult = result;
     if (result !== 'hit') return;
     this.guidedIndex += 1;
+    this.awaitingRearticulate = true;
     this.soundingUntil = now + (step.beats * 60000) / song.bpm;
     this.play(chordForDegree(song.key, step.degree));
   }
 
-  private autoTick(song: Song, now: number): void {
+  /** Time-driven work: guided chord expiry and the auto beat clock. */
+  private advance(now: number): void {
     if (this.pausedAt !== null) return;
+    if (this.mode.kind === 'guided' && this.sounding && now >= this.soundingUntil) this.release();
+    if (this.mode.kind === 'auto') this.autoStep(this.mode.song, now);
+  }
+
+  private autoStep(song: Song, now: number): void {
     const beat = ((now - this.clockStart) * song.bpm) / 60000;
     const hit = stepAtBeat(song.steps, beat, true);
     if (!hit || hit.index === this.autoIndex) return;

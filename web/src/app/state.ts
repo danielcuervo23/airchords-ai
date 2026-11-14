@@ -11,7 +11,7 @@ export interface ControllerState {
   chord: Chord | null;
   expression: Expression;
   preset: PresetId;
-  guided?: { index: number; lastResult: 'hit' | 'wait'; done: boolean };
+  guided?: { index: number; lastResult: 'hit' | 'wait'; done: boolean; needsRearticulate: boolean };
   handsVisible: { chord: boolean; expression: boolean };
 }
 
@@ -27,6 +27,7 @@ export function sameState(a: ControllerState, b: ControllerState): boolean {
     a.handsVisible.expression === b.handsVisible.expression &&
     a.guided?.index === b.guided?.index &&
     a.guided?.lastResult === b.guided?.lastResult &&
-    a.guided?.done === b.guided?.done
+    a.guided?.done === b.guided?.done &&
+    a.guided?.needsRearticulate === b.guided?.needsRearticulate
   );
 }

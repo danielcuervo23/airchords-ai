@@ -291,6 +291,121 @@ describe('InstrumentController', () => {
     });
   });
 
+  describe('fix round 1', () => {
+    const repeat: Song = { ...song, steps: [{ degree: 1, beats: 1 }, { degree: 1, beats: 1 }, { degree: 4, beats: 1 }] };
+    const up = () => frame([hand('Right', 'Pointing_Up')]);
+
+    it('guided: a repeated degree needs re-articulation (drop or change, then repeat)', () => {
+      c.setMode({ kind: 'guided', song: repeat });
+      at(0, up()); at(100, up());
+      expect(engine.count('playChord')).toBe(1);
+      at(200, up()); at(400, up()); at(800, up());
+      expect(engine.count('playChord')).toBe(1);
+      expect(c.getState().guided?.needsRearticulate).toBe(true);
+      at(900, frame([])); at(1000, frame([]));
+      expect(c.getState().guided?.needsRearticulate).toBe(false);
+      at(1100, up()); at(1200, up());
+      expect(engine.count('playChord')).toBe(2);
+      expect(c.getState().guided?.index).toBe(2);
+    });
+
+    it('frames 125 ms apart: one differing frame does nothing, two frames play once', () => {
+      at(0, up()); at(125, up());
+      expect(engine.count('playChord')).toBe(1);
+      at(250, frame([hand('Right', 'Victory')]));
+      at(375, up());
+      expect(engine.count('playChord')).toBe(1);
+      expect(engine.count('release')).toBe(0);
+      at(500, frame([hand('Right', 'Victory')])); at(625, frame([hand('Right', 'Victory')]));
+      expect(engine.chords.at(-1)).toEqual(chordForDegree(C_MAJOR, 2));
+      expect(engine.count('playChord')).toBe(2);
+    });
+
+    it('auto advances on tick with no frames', () => {
+      c.setMode({ kind: 'auto', song });
+      clock = 0;
+      c.tick(0);
+      expect(engine.chords).toEqual([chordForDegree(G_MAJOR, 1)]);
+      c.tick(1000);
+      expect(engine.chords.at(-1)).toEqual(chordForDegree(G_MAJOR, 4));
+    });
+
+    it('guided chord expires on tick with no frames', () => {
+      c.setMode({ kind: 'guided', song });
+      at(0, up()); at(100, up());
+      const before = engine.count('release');
+      c.tick(1200);
+      expect(engine.count('release')).toBe(before + 1);
+    });
+
+    it('watchdog: releases once and hides hands after a 600 ms frame gap', () => {
+      const f = frame([hand('Right', 'Thumb_Up'), hand('Left')]);
+      at(0, f); at(100, f);
+      expect(c.getState().handsVisible).toEqual({ chord: true, expression: true });
+      c.tick(400);
+      expect(engine.count('release')).toBe(0);
+      c.tick(700);
+      expect(engine.count('release')).toBe(1);
+      expect(c.getState().handsVisible).toEqual({ chord: false, expression: false });
+      c.tick(900);
+      expect(engine.count('release')).toBe(1);
+    });
+
+    it('setMode with an invalid song throws and keeps the previous mode', () => {
+      c.setMode({ kind: 'guided', song });
+      expect(() => c.setMode({ kind: 'guided', song: { ...song, steps: [] } })).toThrow();
+      expect(() => c.setMode({ kind: 'auto', song: { ...song, bpm: 0 } })).toThrow();
+      expect(() => c.setMode({ kind: 'auto', song: { ...song, bpm: NaN } })).toThrow();
+      expect(c.getState().guided).toBeDefined();
+      at(0, up()); at(100, up());
+      expect(engine.chords).toEqual([chordForDegree(G_MAJOR, 1)]);
+    });
+
+    it('keeps the paused state across setMode', () => {
+      c.setMode({ kind: 'auto', song });
+      clock = 0; c.onVisibilityChange(true);
+      c.setMode({ kind: 'auto', song });
+      const plays = engine.count('playChord');
+      at(3000, frame([]));
+      expect(engine.count('playChord')).toBe(plays);
+    });
+
+    it('setPreset: latest request wins', async () => {
+      let release1!: () => void;
+      engine.setPreset = async (id: PresetId) => {
+        engine.presets.push(id);
+        if (id === 'cristal') await new Promise<void>((r) => { release1 = r; });
+      };
+      const p1 = c.setPreset('cristal');
+      await c.setPreset('nube');
+      release1();
+      await p1;
+      expect(c.getState().preset).toBe('nube');
+    });
+
+    it('after dispose, onFrame and tick do nothing', () => {
+      c.dispose();
+      const n = engine.calls.length;
+      at(0, up()); at(100, up());
+      c.tick(5000);
+      expect(engine.calls.length).toBe(n);
+    });
+
+    it('mouth must re-arm when the face disappears', () => {
+      at(0, frame([], faceFrame(true)));
+      at(16, frame([]));
+      at(32, frame([], faceFrame(true)));
+      expect(engine.presets.length).toBe(2);
+    });
+
+    it('state expression is a copy', () => {
+      at(0, frame([]));
+      const s = c.getState();
+      s.expression.volume = 0.123;
+      expect(c.getState().expression.volume).not.toBe(0.123);
+    });
+  });
+
   describe('robustness', () => {
     it('never throws on empty hands, null face or NaN aspect', () => {
       expect(() => at(0, frame([], null, NaN))).not.toThrow();
