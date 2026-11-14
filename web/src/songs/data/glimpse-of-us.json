@@ -1,0 +1,81 @@
+{
+  "id": "glimpse-of-us",
+  "title": "Glimpse of Us",
+  "artist": "Joji",
+  "key": {
+    "tonic": "G#",
+    "mode": "major"
+  },
+  "bpm": 93,
+  "steps": [
+    {
+      "degree": 6,
+      "beats": 4,
+      "note": "Orig. Lab mayor (= Sol# mayor): Fm7 -> vi (7a quitada)"
+    },
+    {
+      "degree": 2,
+      "beats": 4,
+      "note": "Orig: Bbm7 -> ii (7a quitada)"
+    },
+    {
+      "degree": 5,
+      "beats": 4,
+      "note": "Orig: Eb7 -> V (7a quitada)"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Orig: Abmaj7 -> I (7a quitada)"
+    },
+    {
+      "degree": 6,
+      "beats": 4
+    },
+    {
+      "degree": 2,
+      "beats": 4
+    },
+    {
+      "degree": 5,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Estribillo. Orig: Abmaj7 -> I"
+    },
+    {
+      "degree": 5,
+      "beats": 4
+    },
+    {
+      "degree": 6,
+      "beats": 4
+    },
+    {
+      "degree": 2,
+      "beats": 4
+    },
+    {
+      "degree": 5,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    },
+    {
+      "degree": 5,
+      "beats": 4
+    },
+    {
+      "degree": 6,
+      "beats": 4
+    }
+  ]
+}

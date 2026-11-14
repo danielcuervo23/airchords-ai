@@ -1,0 +1,82 @@
+{
+  "id": "cant-take-my-eyes-off-you",
+  "title": "Can't Take My Eyes Off You",
+  "artist": "Frankie Valli",
+  "key": {
+    "tonic": "E",
+    "mode": "major"
+  },
+  "bpm": 123,
+  "steps": [
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Orig. Mi mayor: E -> I"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Orig: Emaj7 -> I"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Orig: E7 -> I"
+    },
+    {
+      "degree": 4,
+      "beats": 4,
+      "note": "Orig: A -> IV"
+    },
+    {
+      "degree": 4,
+      "beats": 4,
+      "note": "Orig: Adim7 -> IV (disminuido pasa a mayor)"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Orig: E -> I"
+    },
+    {
+      "degree": 2,
+      "beats": 4,
+      "note": "Orig: F#7 -> ii: mayor pasa a menor (func. dom. sec.)"
+    },
+    {
+      "degree": 2,
+      "beats": 4,
+      "note": "Orig: F#m7b5 -> ii (quinta y 7a quitadas)"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Orig: Emaj7 -> I"
+    },
+    {
+      "degree": 2,
+      "beats": 4,
+      "note": "Estribillo (Hooktheory). Orig: F#m9 -> ii"
+    },
+    {
+      "degree": 6,
+      "beats": 4,
+      "note": "Orig: C#m7/G# (2a inv.) -> vi"
+    },
+    {
+      "degree": 5,
+      "beats": 4,
+      "note": "Orig: B13b9 -> V (extensiones quitadas)"
+    },
+    {
+      "degree": 3,
+      "beats": 4,
+      "note": "Orig: G#m7/D# -> iii"
+    },
+    {
+      "degree": 6,
+      "beats": 4,
+      "note": "Orig: C#m7sus4 -> vi"
+    }
+  ]
+}

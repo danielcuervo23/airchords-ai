@@ -1,0 +1,152 @@
+{
+  "id": "city-of-stars",
+  "title": "City of Stars",
+  "artist": "Ryan Gosling & Emma Stone (La La Land)",
+  "key": {
+    "tonic": "D",
+    "mode": "minor"
+  },
+  "bpm": 100,
+  "steps": [
+    {
+      "degree": 4,
+      "beats": 4,
+      "note": "Orig. Re menor: Gm7 -> iv (7a quitada)"
+    },
+    {
+      "degree": 7,
+      "beats": 4,
+      "note": "Orig: C7 -> VII (7a quitada)"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Orig: Dm7 -> i (7a quitada)"
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    },
+    {
+      "degree": 4,
+      "beats": 4
+    },
+    {
+      "degree": 7,
+      "beats": 4
+    },
+    {
+      "degree": 3,
+      "beats": 4,
+      "note": "Orig: F -> III"
+    },
+    {
+      "degree": 3,
+      "beats": 4
+    },
+    {
+      "degree": 4,
+      "beats": 4
+    },
+    {
+      "degree": 7,
+      "beats": 4
+    },
+    {
+      "degree": 3,
+      "beats": 4,
+      "note": "Orig: Fmaj7/F7 -> III (7a quitada)"
+    },
+    {
+      "degree": 3,
+      "beats": 4
+    },
+    {
+      "degree": 4,
+      "beats": 4
+    },
+    {
+      "degree": 5,
+      "beats": 4,
+      "note": "Orig: A7 -> v: A mayor pasa a menor (escala natural)"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Orig: Dm -> i"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Orig: Dm/C -> i (bajo quitado)"
+    },
+    {
+      "degree": 6,
+      "beats": 4,
+      "note": "Estribillo. Orig: Bb -> VI"
+    },
+    {
+      "degree": 7,
+      "beats": 4,
+      "note": "Orig: C7 -> VII (7a quitada)"
+    },
+    {
+      "degree": 5,
+      "beats": 4,
+      "note": "Orig: A7 -> v: mayor pasa a menor (natural)"
+    },
+    {
+      "degree": 1,
+      "beats": 4,
+      "note": "Orig: Dm7 -> i"
+    },
+    {
+      "degree": 6,
+      "beats": 4
+    },
+    {
+      "degree": 7,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    },
+    {
+      "degree": 6,
+      "beats": 4
+    },
+    {
+      "degree": 7,
+      "beats": 4
+    },
+    {
+      "degree": 5,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    },
+    {
+      "degree": 6,
+      "beats": 4
+    },
+    {
+      "degree": 5,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    },
+    {
+      "degree": 1,
+      "beats": 4
+    }
+  ]
+}
