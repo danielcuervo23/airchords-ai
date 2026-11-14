@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AirChords · Tres direcciones</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F3F2EE;--ink:#18181A;--ink-2:#55555A;--rule:#D4D2CB;--card:#FFFFFF;--accent:#1F3FD8}
+*{box-sizing:border-box;margin:0}
+html{background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{background:var(--bg);padding:48px 32px 80px}
+::selection{background:var(--ink);color:var(--bg)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:4px}
+header{max-width:1600px;margin:0 auto 40px}
+h1{font-size:clamp(2rem,4vw,3rem);letter-spacing:-.02em;line-height:1.05}
+header p{max-width:68ch;font-size:1.08rem;line-height:1.55;color:var(--ink-2);margin-top:14px}
+.grid{max-width:1600px;margin:0 auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}
+article{display:flex;flex-direction:column;gap:16px}
+.preview{position:relative;width:100%;aspect-ratio:1640/2200;overflow:hidden;border-radius:12px;background:var(--card);box-shadow:0 1px 0 var(--rule),0 20px 40px -24px rgba(0,0,0,.35)}
+.preview iframe{position:absolute;left:0;top:0;width:1640px;height:2200px;border:0;transform-origin:0 0;pointer-events:none}
+h2{font-size:1.5rem;letter-spacing:-.01em}
+h2 small{display:block;font-size:.95rem;font-weight:400;color:var(--ink-2);margin-top:4px}
+article p{font-size:1rem;line-height:1.6;max-width:62ch}
+.open{align-self:flex-start;display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:999px;background:var(--ink);color:var(--bg);font-weight:700;text-decoration:none;transition:transform .25s cubic-bezier(.16,1,.3,1)}
+.open:hover{transform:translateY(-2px)}
+.open svg{width:16px;height:16px}
+.rec{display:inline-block;font-size:.85rem;font-weight:700;background:var(--accent);color:#fff;padding:8px 12px;border-radius:999px;margin-left:6px;vertical-align:middle}
+footer{max-width:1600px;margin:48px auto 0;border-top:1px solid var(--rule);padding-top:20px;color:var(--ink-2);font-size:.95rem;line-height:1.55}
+footer p{max-width:80ch}
+@media (max-width:1100px){.grid{grid-template-columns:1fr}.preview{max-width:620px}}
+@media (max-width:600px){body{padding:28px 16px 60px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <h1>AirChords: tres caminos para su aspecto</h1>
+  <p>Las tres versiones muestran lo mismo: la pantalla de tocar en un teléfono y en una computadora, más la portada y la guía de gestos. Solo cambia la «ropa» de la aplicación. Mira cada una, ábrela en grande y elige la que mejor te represente en tu portafolio.</p>
+</header>
+
+<main class="grid">
+  <article>
+    <div class="preview"><iframe src="direccion-a.html" title="Vista previa de la dirección A, Modulador" loading="lazy" tabindex="-1"></iframe></div>
+    <h2>A · Modulador<small>Lámina de clase de música</small></h2>
+    <p>Piensa en las láminas que colgaban en el salón de música del colegio. Hace más de cien años, los maestros ya enseñaban las notas con señas de la mano y con una escalera dibujada en la pared. Esta versión usa esa misma idea: junto a tu cámara aparece una escalera de siete peldaños y el que estás tocando se pinta de amarillo. Es clara, tranquila y muy fácil de leer, con fondo claro y tinta verde oscura.</p>
+    <a class="open" href="direccion-a.html">Abrir en grande <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </article>
+
+  <article>
+    <div class="preview"><iframe src="direccion-b.html" title="Vista previa de la dirección B, Gelatina" loading="lazy" tabindex="-1"></iframe></div>
+    <h2>B · Gelatina <span class="rec">Recomendada</span><small>Luces de escenario</small></h2>
+    <p>En el teatro, para cambiar el ambiente, ponen hojas de colores delante de los focos. Aquí cada acorde tiene su propio color de luz: cuando cambias la seña de la mano, la imagen de tu cámara se tiñe de otro color, como si un iluminador te siguiera. Es oscura y llamativa, ideal para grabar un video corto y que la gente entienda al instante que tu mano «enciende» la música.</p>
+    <a class="open" href="direccion-b.html">Abrir en grande <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </article>
+
+  <article>
+    <div class="preview"><iframe src="direccion-c.html" title="Vista previa de la dirección C, Cartel" loading="lazy" tabindex="-1"></iframe></div>
+    <h2>C · Cartel<small>Póster de concierto suizo</small></h2>
+    <p>Imagina un cartel de concierto pegado en una calle de Zúrich: letras gigantes, cuadrículas ordenadas y un solo color fuerte. La mitad de la pantalla es azul intenso y ahí aparece en grande el número del acorde. La canción se ve como una fila de casillas que se van rellenando, como un calendario que vas tachando. Se siente elegante, de diseñador, muy de portafolio.</p>
+    <a class="open" href="direccion-c.html">Abrir en grande <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </article>
+</main>
+
+<footer>
+  <p>Son maquetas para elegir un estilo, no la aplicación terminada: la cámara es un dibujo gris, y los pasos de las canciones son de ejemplo. Las tres respetan lo mismo: textos grandes y con buen contraste, botones con su nombre escrito, un marco visible al moverse con el teclado, y animaciones que se apagan si tu equipo pide «reducir movimiento».</p>
+</footer>
+
+<script>
+function fit(){document.querySelectorAll(".preview").forEach(p=>{const f=p.querySelector("iframe");f.style.transform=`scale(${p.clientWidth/1640})`})}
+addEventListener("resize",fit);fit();
+</script>
+</body>
+</html>

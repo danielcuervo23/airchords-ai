@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AirChords · Gelatina</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --curtain:#1C1216;     /* telón: berenjena casi negra */
+  --curtain-2:#2A1C22;
+  --curtain-3:#3A2830;
+  --chalk:#F6EEE9;       /* texto principal (16:1 sobre telón) */
+  --chalk-2:#CDBDC3;     /* texto secundario (10:1) */
+  --g1:#F5A623; --g2:#EF5B8C; --g3:#A386EE; --g4:#3FC59A; --g5:#4AA8F0; --g6:#F26B4F; --g7:#E8D86A;
+  --gel:var(--g2);
+  --focus:#F6EEE9;
+  --wide:"Archivo", system-ui, sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0}
+html{background:var(--curtain);color:var(--chalk);font-family:var(--wide);font-stretch:100%;-webkit-font-smoothing:antialiased}
+body{background:var(--curtain);padding:40px 32px 80px;min-height:100vh}
+::selection{background:var(--g1);color:var(--curtain)}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:8px}
+button{font:inherit;color:inherit;cursor:pointer}
+.nums{font-variant-numeric:tabular-nums}
+.wide{font-stretch:125%;font-weight:800;letter-spacing:-.01em}
+
+/* ficha */
+.spec{max-width:1560px;margin:0 auto 44px;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:40px;align-items:end}
+.spec h1{font-stretch:125%;font-weight:900;font-size:clamp(2.6rem,5.4vw,4.6rem);line-height:.92;letter-spacing:-.02em}
+.spec h1 span{display:block;font-stretch:100%;font-weight:500;font-size:1.55rem;letter-spacing:0;color:var(--chalk-2);margin-top:12px}
+.spec p{max-width:62ch;font-size:1.05rem;line-height:1.55;margin-top:18px;color:var(--chalk)}
+.spec dl{display:grid;grid-template-columns:auto 1fr;gap:10px 18px;font-size:.92rem;color:var(--chalk-2)}
+.spec dt{font-weight:700;color:var(--chalk)}
+.gels{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.gels i{width:30px;height:44px;border-radius:3px 3px 0 0;display:inline-block;position:relative}
+.gels i::after{content:attr(data-n);position:absolute;bottom:4px;left:0;right:0;text-align:center;font-style:normal;font-size:.75rem;font-weight:800;color:var(--curtain)}
+
+/* tablero */
+.board{max-width:1560px;margin:0 auto;display:flex;gap:44px;align-items:flex-start;flex-wrap:wrap}
+.frame-label{font-weight:700;font-size:1rem;margin-bottom:14px;display:flex;gap:10px;align-items:baseline}
+.frame-label small{font-weight:400;font-size:.85rem;color:var(--chalk-2)}
+.phone{width:390px;height:844px;border-radius:46px;background:var(--curtain);box-shadow:0 0 0 10px #0B0709,0 0 0 11px #3A2830,0 40px 80px -30px rgba(0,0,0,.8);overflow:hidden;position:relative;display:flex;flex-direction:column}
+.desk{width:1120px;height:760px;border-radius:14px;background:var(--curtain);box-shadow:0 0 0 1px var(--curtain-3),0 40px 80px -30px rgba(0,0,0,.8);overflow:hidden;display:flex;flex-direction:column}
+.desk .chrome{height:34px;background:#120B0E;display:flex;align-items:center;gap:7px;padding:0 14px}
+.desk .chrome i{width:11px;height:11px;border-radius:50%;background:var(--curtain-3)}
+.desk .chrome span{margin-left:18px;font-size:.75rem;color:var(--chalk-2);background:var(--curtain-2);padding:8px 14px;border-radius:6px;line-height:1}
+
+/* barra */
+.appbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;position:relative;z-index:3}
+.phone .appbar{position:absolute;left:0;right:0;top:0;padding-top:52px;background:linear-gradient(rgba(28,18,22,.75),transparent)}
+.wordmark{font-stretch:125%;font-weight:900;font-size:1.2rem;letter-spacing:-.01em;display:flex;align-items:center;gap:8px}
+.wordmark svg{width:24px;height:24px}
+.navbtns{display:flex;gap:6px}
+.btn-q{display:inline-flex;align-items:center;gap:6px;padding:9px 13px;border-radius:999px;border:0;background:rgba(246,238,233,.12);backdrop-filter:blur(10px);font-size:.85rem;font-weight:700;transition:background .25s var(--ease)}
+.btn-q:hover{background:rgba(246,238,233,.22)}
+.btn-q svg{width:16px;height:16px}
+
+/* video bañado por la gelatina */
+.video{position:relative;overflow:hidden;background:
+  radial-gradient(ellipse 60% 48% at 50% 112%, #5A5658 0 60%, transparent 61%),
+  radial-gradient(circle at 50% 45%, #7A7577 0 14%, transparent 14.5%),
+  linear-gradient(160deg,#6A6668,#353133)}
+.video .wash{position:absolute;inset:0;background:var(--gel);mix-blend-mode:multiply;opacity:.78;transition:background .7s var(--ease)}
+.video .spot{position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,0) 55%);mix-blend-mode:screen}
+.video .fade{position:absolute;inset:auto 0 0 0;height:55%;background:linear-gradient(transparent,rgba(28,18,22,.92))}
+.landmarks{position:absolute;z-index:2}
+.landmarks line{stroke:#fff;stroke-width:3;stroke-linecap:round;opacity:.9}
+.landmarks circle{fill:var(--curtain);stroke:#fff;stroke-width:2.5}
+.mirror{position:absolute;z-index:2;font-size:.75rem;font-weight:700;background:rgba(28,18,22,.82);padding:8px 12px;border-radius:999px;line-height:1}
+
+.chord{position:absolute;z-index:2;display:flex;flex-direction:column}
+.chord .row1{display:flex;align-items:flex-end;gap:12px}
+.chord .sym{font-stretch:125%;font-weight:900;line-height:.8;letter-spacing:-.03em}
+.chord .deg{font-stretch:125%;font-weight:800;color:var(--curtain);background:var(--gel);border-radius:8px;padding:8px 12px;line-height:1;transition:background .7s var(--ease)}
+.chord .name{font-weight:500;color:var(--chalk);margin-top:10px}
+
+.meters{position:absolute;z-index:2;display:flex;flex-direction:column;gap:8px}
+.meter{display:flex;align-items:center;gap:8px;font-size:.75rem;font-weight:700;background:rgba(28,18,22,.62);padding:8px 10px;border-radius:10px;backdrop-filter:blur(8px)}
+.meter .bar{width:46px;height:6px;border-radius:3px;background:rgba(246,238,233,.25);overflow:hidden}
+.meter .bar i{display:block;height:100%;background:var(--chalk)}
+
+/* muestrario: el abanico de gelatinas */
+.book{display:flex;align-items:flex-end;gap:4px;list-style:none;padding:0}
+.book li{flex:1;border-radius:6px 6px 2px 2px;background:var(--c);color:var(--curtain);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;padding:8px 2px 8px;height:62px;opacity:.62;transition:height .5s var(--ease),opacity .5s var(--ease);position:relative;font-stretch:125%;font-weight:800;font-size:.8rem}
+.book li svg{width:26px;height:26px}
+.book li.now{height:96px;opacity:1}
+.book li.next{opacity:.85;height:78px;outline:2px dashed var(--chalk);outline-offset:3px}
+.hand .f{fill:var(--c,transparent);stroke:var(--curtain);stroke-width:2.3;stroke-linejoin:round}
+.cueline{display:flex;justify-content:space-between;align-items:baseline;font-size:.82rem;color:var(--chalk-2);margin-bottom:10px}
+.cueline b{color:var(--chalk);font-size:.95rem}
+.cueline .tag{display:inline-flex;gap:8px;align-items:center}
+.cueline .tag em{font-style:normal;font-weight:700;color:var(--chalk)}
+
+/* controles */
+.ctrl{display:grid;grid-template-columns:1.2fr 1fr;gap:8px}
+.pick{display:flex;flex-direction:column;justify-content:center;padding:10px 14px;border-radius:14px;border:0;background:var(--curtain-2);text-align:left;min-height:52px;transition:background .25s var(--ease)}
+.pick:hover{background:var(--curtain-3)}
+.pick small{font-size:.75rem;font-weight:600;color:var(--chalk-2)}
+.pick span{font-weight:800;font-size:1rem;display:flex;align-items:center;gap:6px}
+.pick span svg{width:14px;height:14px;opacity:.8}
+.pick .no{font-stretch:75%;font-weight:700;color:var(--chalk-2);font-size:.85rem}
+.switch{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:14px;border:0;background:var(--curtain-2);text-align:left;min-height:52px}
+.switch .track{width:38px;height:22px;border-radius:999px;background:var(--curtain-3);position:relative;flex:none;transition:background .3s var(--ease)}
+.switch .track::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:var(--chalk);transition:transform .3s var(--ease)}
+.switch[aria-checked="true"] .track{background:var(--g4)}
+.switch[aria-checked="true"] .track::after{transform:translateX(16px);background:var(--curtain)}
+.switch span{font-size:.82rem;font-weight:700;line-height:1.2}
+
+/* teléfono */
+.phone .video{height:540px;flex:none}
+.phone .chord{left:20px;bottom:22px}
+.phone .chord .sym{font-size:92px}
+.phone .chord .deg{font-size:28px}
+.phone .meters{right:14px;top:112px}
+.phone .mirror{right:14px;bottom:22px}
+.phone .landmarks{left:18%;top:20%;width:50%}
+.p-low{flex:1;padding:16px 16px 26px;display:flex;flex-direction:column;gap:14px}
+
+/* escritorio */
+.d-body{flex:1;display:grid;grid-template-columns:1fr 340px;min-height:0}
+.desk .video{height:100%}
+.desk .chord{left:28px;bottom:28px}
+.desk .chord .sym{font-size:132px}
+.desk .chord .deg{font-size:40px}
+.desk .meters{left:24px;top:24px;flex-direction:row}
+.desk .mirror{right:22px;bottom:26px}
+.desk .landmarks{left:36%;top:12%;width:30%}
+.desk .appbar{position:absolute;right:0;top:0}
+.d-video-wrap{position:relative;min-height:0}
+.d-side{background:var(--curtain);padding:20px 20px 18px;display:flex;flex-direction:column;gap:16px;min-height:0;border-left:1px solid var(--curtain-3)}
+.d-side h2{font-stretch:125%;font-weight:800;font-size:1.05rem}
+.label{font-size:.75rem;font-weight:700;color:var(--chalk-2);margin-bottom:8px;display:block}
+.cues{list-style:none;padding:0;display:flex;flex-direction:column;gap:4px}
+.cues li{display:grid;grid-template-columns:72px 30px 1fr auto;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:var(--curtain-2);font-size:.88rem;transition:background .5s var(--ease)}
+.cues li .n{white-space:nowrap;font-stretch:75%;font-weight:700;color:var(--chalk-2)}
+.cues li .sw{width:26px;height:26px;border-radius:5px;background:var(--c)}
+.cues li b{font-stretch:125%;font-weight:800}
+.cues li.now{background:var(--c);color:var(--curtain)}
+.cues li.now .n{color:var(--curtain)}
+.cues li.now .sw{background:var(--curtain)}
+.seg{display:flex;background:var(--curtain-2);border-radius:12px;padding:4px;gap:4px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:9px 8px;font-size:.85rem;font-weight:700;color:var(--chalk-2)}
+.seg button[aria-pressed="true"]{background:var(--chalk);color:var(--curtain)}
+.tempo{display:flex;align-items:center;gap:14px}
+.tempo output{font-stretch:125%;font-weight:900;font-size:2rem;min-width:3ch;line-height:1}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--chalk) 36%,var(--curtain-3) 36%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;background:var(--chalk);border:4px solid var(--curtain)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--chalk);border:4px solid var(--curtain)}
+.d-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* tira */
+.strip{max-width:1560px;margin:60px auto 0;display:flex;gap:44px;flex-wrap:wrap;align-items:flex-start}
+.strip h2{width:100%;font-stretch:125%;font-weight:800;font-size:1.4rem;border-top:1px solid var(--curtain-3);padding-top:20px}
+.mini{width:360px;height:740px;border-radius:42px;box-shadow:0 0 0 9px #0B0709,0 0 0 10px #3A2830,0 30px 60px -24px rgba(0,0,0,.8);background:var(--curtain);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.mini .appbar{padding-top:48px}
+.home{flex:1;display:flex;flex-direction:column;padding:0 22px 26px;position:relative}
+.home .fan{position:absolute;inset:0 0 auto 0;height:240px;overflow:hidden;display:flex;gap:0;opacity:.95;pointer-events:none}
+.home .fan i{flex:1;background:var(--c);transform-origin:bottom center}
+.home .fan::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 30%,var(--curtain) 88%)}
+.home h3{position:relative;font-stretch:125%;font-weight:900;font-size:2.55rem;line-height:.95;letter-spacing:-.025em;margin-top:262px;text-wrap:balance}
+.home p{position:relative;font-size:1rem;line-height:1.5;margin-top:14px;color:var(--chalk-2)}
+.cta{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:18px;border-radius:16px;border:0;background:var(--chalk);color:var(--curtain);font-stretch:125%;font-weight:900;font-size:1.25rem;transition:transform .3s var(--ease),background .3s var(--ease)}
+.cta:hover{transform:translateY(-2px);background:#fff}
+.cta svg{width:20px;height:20px}
+.privacy{display:flex;gap:8px;align-items:center;justify-content:center;font-size:.85rem;margin-top:12px;color:var(--chalk-2)}
+.privacy svg{width:16px;height:16px;flex:none}
+.gl{flex:1;padding:0 16px 20px;display:flex;flex-direction:column}
+.gl h3{font-stretch:125%;font-weight:900;font-size:1.8rem;margin:6px 0 4px}
+.gl p{font-size:.88rem;color:var(--chalk-2);margin-bottom:14px}
+.gl ul{list-style:none;padding:0;display:flex;flex-direction:column;gap:5px}
+.gl li{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:10px;padding:8px 14px 8px 10px;border-radius:12px;background:var(--c);color:var(--curtain)}
+.gl li svg{width:38px;height:38px}
+.gl li b{font-stretch:125%;font-weight:900;font-size:1.3rem}
+.gl li span{font-size:.88rem;font-weight:700}
+.gl li span em{display:block;font-style:normal;font-weight:500;font-size:.78rem}
+.gl .foot{margin-top:12px;font-size:.82rem;color:var(--chalk-2);display:flex;flex-direction:column;gap:4px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:820px){.spec{grid-template-columns:1fr}body{padding:24px 16px 60px}}
+</style>
+</head>
+<body>
+
+<header class="spec">
+  <div>
+    <h1>Dirección B · Gelatina<span>Cada acorde es un color de luz de escenario</span></h1>
+    <p>En el teatro, el iluminador cambia la escena poniendo hojas de color (gelatinas) delante del foco. Aquí cada acorde tiene su gelatina: al cambiar de seña, la luz que te baña en la cámara cambia de color. Los siete acordes viven en un muestrario en abanico, como el que llevan los técnicos en el bolsillo.</p>
+  </div>
+  <dl>
+    <dt>Paleta</dt>
+    <dd><div class="gels"><i data-n="I" style="background:#F5A623"></i><i data-n="II" style="background:#EF5B8C"></i><i data-n="III" style="background:#A386EE"></i><i data-n="IV" style="background:#3FC59A"></i><i data-n="V" style="background:#4AA8F0"></i><i data-n="VI" style="background:#F26B4F"></i><i data-n="VII" style="background:#E8D86A"></i></div>
+    Sobre telón berenjena #1C1216 y tiza #F6EEE9</dd>
+    <dt>Letras</dt>
+    <dd>Archivo en tres anchos: extendida y gruesa para acordes y títulos, normal para texto, estrecha para numerar</dd>
+    <dt>Movimiento</dt>
+    <dd>Un único gesto, el «cambio de luz»: la gelatina se funde al nuevo color en 0,7 s. Con movimiento reducido el cambio es instantáneo.</dd>
+  </dl>
+</header>
+
+<main class="board">
+  <figure>
+    <figcaption class="frame-label">Instrumento · teléfono <small>390 × 844 · modo Canción guiada</small></figcaption>
+    <div class="phone" style="--gel:var(--g2)">
+      <div class="appbar">
+        <div class="wordmark"><span class="logo"></span>AirChords</div>
+        <nav class="navbtns" aria-label="Secciones">
+          <button class="btn-q"><span data-icon="book"></span>Guía</button>
+          <button class="btn-q"><span data-icon="info"></span>Créditos</button>
+        </nav>
+      </div>
+      <div class="video" role="img" aria-label="Vista de la cámara en espejo, bañada en luz rosa, con los puntos de la mano dibujados">
+        <div class="wash"></div><div class="spot"></div><div class="fade"></div>
+        <div class="landmarks" data-landmarks></div>
+        <div class="meters">
+          <div class="meter">Volumen <span class="bar"><i style="width:72%"></i></span></div>
+          <div class="meter">Brillo <span class="bar"><i style="width:40%"></i></span></div>
+        </div>
+        <div class="chord"><div class="row1"><span class="sym">Dm</span><span class="deg">II</span></div><span class="name">Re menor · tono Do mayor</span></div>
+        <span class="mirror">Espejo</span>
+      </div>
+      <div class="p-low">
+        <div>
+          <div class="cueline"><b>Acordes de City of Stars</b><span class="tag nums">Paso 3 de 12</span></div>
+          <ol class="book" data-book data-now="1" data-next="4" aria-label="Muestrario de acordes: ahora II, después V"></ol>
+        </div>
+        <div class="ctrl">
+          <button class="pick"><small>Sonido · abre la boca para cambiar</small><span><span class="no">N.º 01</span> Piano <span data-icon="chev"></span></span></button>
+          <button class="pick"><small>Tono</small><span>Do mayor <span data-icon="chev"></span></span></button>
+          <button class="pick"><small>Modo</small><span>Guiada <span data-icon="chev"></span></span></button>
+          <button class="switch" role="switch" aria-checked="false"><span class="track"></span><span>Máscara 3D</span></button>
+        </div>
+      </div>
+    </div>
+  </figure>
+
+  <figure>
+    <figcaption class="frame-label">Instrumento · escritorio <small>1120 × 760 · modo Automático: la hoja de cambios avanza sola</small></figcaption>
+    <div class="desk" id="desk" style="--gel:var(--g1)">
+      <div class="chrome"><i></i><i></i><i></i><span>airchords · instrumento</span></div>
+      <div class="d-body">
+        <div class="d-video-wrap">
+          <div class="video" role="img" aria-label="Vista de la cámara en espejo bañada en la luz del acorde actual">
+            <div class="wash"></div><div class="spot"></div><div class="fade"></div>
+            <div class="landmarks" data-landmarks></div>
+            <div class="meters">
+              <div class="meter">Volumen <span class="bar"><i style="width:72%"></i></span></div>
+              <div class="meter">Brillo <span class="bar"><i style="width:40%"></i></span></div>
+            </div>
+            <div class="chord" aria-live="polite"><div class="row1"><span class="sym" data-demo-sym>C</span><span class="deg" data-demo-deg>I</span></div><span class="name" data-demo-name>Do mayor · tono Do mayor</span></div>
+            <span class="mirror">Espejo</span>
+          </div>
+          <div class="appbar"><nav class="navbtns" aria-label="Secciones"><button class="btn-q"><span data-icon="book"></span>Guía de gestos</button><button class="btn-q"><span data-icon="info"></span>Créditos</button></nav></div>
+        </div>
+        <div class="d-side">
+          <div class="wordmark"><span class="logo"></span>AirChords</div>
+          <div><span class="label">Modo</span><div class="seg"><button aria-pressed="false">Libre</button><button aria-pressed="false">Guiada</button><button aria-pressed="true">Automático</button></div></div>
+          <div>
+            <span class="label">Hoja de cambios · I – V – VI – IV</span>
+            <ol class="cues" data-cues></ol>
+          </div>
+          <div><label class="label" for="bpm-b">Tempo (BPM, de 60 a 160)</label><div class="tempo"><output class="nums" for="bpm-b">96</output><input id="bpm-b" type="range" min="60" max="160" value="96"></div></div>
+          <div class="d-grid">
+            <button class="pick"><small>Sonido</small><span><span class="no">N.º 05</span> Cristal <span data-icon="chev"></span></span></button>
+            <button class="pick"><small>Tono</small><span>Do mayor <span data-icon="chev"></span></span></button>
+          </div>
+          <button class="switch" role="switch" aria-checked="true"><span class="track"></span><span>Máscara 3D de Spider-Man (demo de fan)</span></button>
+        </div>
+      </div>
+    </div>
+  </figure>
+</main>
+
+<section class="strip" aria-label="Otras pantallas">
+  <h2>Inicio y Guía de gestos</h2>
+  <div class="mini">
+    <div class="appbar" style="position:relative;z-index:3"><div class="wordmark"><span class="logo"></span>AirChords</div></div>
+    <div class="home">
+      <div class="fan" data-fan aria-hidden="true"></div>
+      <h3>Tus manos encienden los acordes.</h3>
+      <p>Haz una seña con la mano derecha frente a la cámara y suena un acorde, con su propio color de luz. La izquierda maneja volumen y brillo.</p>
+      <button class="cta">Empezar <span data-icon="arrow"></span></button>
+      <p class="privacy"><span data-icon="lock"></span>La cámara se procesa solo en tu dispositivo</p>
+    </div>
+  </div>
+  <div class="mini">
+    <div class="appbar"><div class="wordmark"><span class="logo"></span>AirChords</div><button class="btn-q"><span data-icon="close"></span>Cerrar</button></div>
+    <div class="gl">
+      <h3>Guía de gestos</h3>
+      <p>Mano derecha. Cada seña, un acorde y su color.</p>
+      <ul data-guide-list></ul>
+      <div class="foot"><span>Mano abajo: silencio.</span><span>Mano izquierda: altura = volumen, giro = brillo.</span><span>Boca abierta: siguiente sonido.</span></div>
+    </div>
+  </div>
+</section>
+
+<script>
+const SIGNS=[
+ {d:"I",  name:"Índice arriba", f:[1,0,0,0], t:"in"},
+ {d:"II", name:"Índice y medio", f:[1,1,0,0], t:"in"},
+ {d:"III",name:"Pulgar, índice y meñique", f:[1,0,0,1], t:"out"},
+ {d:"IV", name:"Pulgar arriba", thumb:"up"},
+ {d:"V",  name:"Mano abierta", f:[1,1,1,1], t:"out"},
+ {d:"VI", name:"Pulgar abajo", thumb:"down"},
+ {d:"VII",name:"Puño cerrado", f:[0,0,0,0], t:"in"}
+];
+const CHORDS=[["C","Do mayor"],["Dm","Re menor"],["Em","Mi menor"],["F","Fa mayor"],["G","Sol mayor"],["Am","La menor"],["B°","Si disminuido"]];
+const GEL=i=>`var(--g${i+1})`;
+function hand(i){
+  const s=SIGNS[i];let p="";
+  const cap=(x,y,w,h)=>`<rect class="f" x="${x}" y="${y}" width="${w}" height="${h}" rx="${w/2}"/>`;
+  if(s.thumb){
+    const fist=[0,1,2,3].map(k=>cap(18+k*5.4,19,5.4,10)).join("")+`<rect class="f" x="16" y="24" width="24" height="17" rx="5"/>`;
+    p=`<g ${s.thumb==="down"?'transform="rotate(180 26 26)"':''}>${cap(10,6,6,24)}${fist}</g>`;
+  }else{
+    const xs=[14.5,19.8,25.1,30.4],tops=[4,2,4,9];
+    s.f.forEach((u,k)=>{p+=u?cap(xs[k],tops[k],5,26):cap(xs[k],16,5,12)});
+    if(s.t==="out")p+=`<rect class="f" x="7" y="22" width="5.2" height="15" rx="2.6" transform="rotate(-38 12 36)"/>`;
+    p+=`<rect class="f" x="13" y="22" width="24" height="20" rx="6"/>`;
+    if(s.t==="in")p+=`<rect class="f" x="11" y="28" width="15" height="5.4" rx="2.7"/>`;
+  }
+  return `<svg class="hand" viewBox="0 0 50 50" aria-hidden="true">${p}</svg>`;
+}
+const ICONS={
+ book:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5"/></svg>',
+ info:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.01"/></svg>',
+ arrow:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+ lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+ close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+ chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>'
+};
+document.querySelectorAll("[data-icon]").forEach(e=>e.outerHTML=ICONS[e.dataset.icon]);
+document.querySelectorAll(".logo").forEach(e=>e.outerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="6" height="16" rx="1.5" fill="#F5A623" transform="rotate(-14 6 20)"/><rect x="9" y="4" width="6" height="16" rx="1.5" fill="#EF5B8C"/><rect x="15" y="4" width="6" height="16" rx="1.5" fill="#4AA8F0" transform="rotate(14 18 20)"/></svg>');
+
+function fillBook(ol){const now=+ol.dataset.now,next=+ol.dataset.next;
+  ol.innerHTML=SIGNS.map((s,i)=>`<li style="--c:${GEL(i)}" class="${i===now?'now':''} ${i===next?'next':''}" ${i===now?'aria-current="step"':''}>${hand(i)}${s.d}</li>`).join("");}
+document.querySelectorAll("[data-book]").forEach(fillBook);
+
+const LM_P=[[100,190],[72,172],[60,152],[74,140],[88,138],[78,120],[72,86],[68,62],[65,40],[100,115],[102,78],[104,52],[106,28],[120,121],[128,104],[122,118],[116,128],[138,130],[146,116],[140,128],[134,136]];
+const LM_E=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[0,17],[17,18],[18,19],[19,20]];
+const lm=`<svg viewBox="20 20 140 180" aria-hidden="true">${LM_E.map(([a,b])=>`<line x1="${LM_P[a][0]}" y1="${LM_P[a][1]}" x2="${LM_P[b][0]}" y2="${LM_P[b][1]}"/>`).join("")}${LM_P.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="4.5"/>`).join("")}</svg>`;
+document.querySelectorAll("[data-landmarks]").forEach(e=>e.innerHTML=lm);
+
+const prog=[0,4,5,3];let k=0;
+const cues=document.querySelector("[data-cues]");
+function fillCues(){cues.innerHTML=prog.map((i,n)=>`<li style="--c:${GEL(i)}" class="${n===k?'now':''}"><span class="n">Cambio ${n+1}</span><span class="sw"></span><b>${SIGNS[i].d} · ${CHORDS[i][0]}</b><span>${CHORDS[i][1]}</span></li>`).join("")}
+fillCues();
+document.querySelector("[data-fan]").innerHTML=SIGNS.map((s,i)=>`<i style="--c:${GEL(i)};transform:rotate(${(i-3)*6}deg)"></i>`).join("");
+document.querySelector("[data-guide-list]").innerHTML=SIGNS.map((s,i)=>`<li style="--c:${GEL(i)}">${hand(i)}<span>${CHORDS[i][0]} · ${CHORDS[i][1]}<em>${s.name}</em></span><b>${s.d}</b></li>`).join("");
+
+const desk=document.getElementById("desk");
+if(!matchMedia("(prefers-reduced-motion: reduce)").matches){
+  setInterval(()=>{k=(k+1)%prog.length;const i=prog[k];
+    desk.style.setProperty("--gel",GEL(i));
+    document.querySelector("[data-demo-sym]").textContent=CHORDS[i][0];
+    document.querySelector("[data-demo-deg]").textContent=SIGNS[i].d;
+    document.querySelector("[data-demo-name]").textContent=CHORDS[i][1]+" · tono Do mayor";
+    fillCues();
+  },60000/96*4);
+}
+const r=document.getElementById("bpm-b");r.addEventListener("input",()=>{r.previousElementSibling.value=r.value;const p=r.value-60;r.style.background=`linear-gradient(90deg,var(--chalk) ${p}%,var(--curtain-3) ${p}%)`});
+document.querySelectorAll(".switch").forEach(s=>s.addEventListener("click",()=>s.setAttribute("aria-checked",s.getAttribute("aria-checked")!=="true")));
+</script>
+</body>
+</html>
