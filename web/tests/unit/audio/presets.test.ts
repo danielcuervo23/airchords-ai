@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PRESETS } from '../../../src/audio/presets';
+import { PRESETS, VISIBLE_PRESETS } from '../../../src/audio/presets';
 
 const GESTURE_SYNTH = ['Warm', 'Bright', 'Retro Synth', 'Dreamy', 'Strings', 'Horns'];
 
@@ -25,5 +25,9 @@ describe('PRESETS', () => {
       expect(p.samples!.baseUrl.endsWith('/')).toBe(true);
       expect(Object.keys(p.samples!.notes).length).toBeGreaterThanOrEqual(5);
     }
+  });
+  it('hides Guitarra in v1 (it makes no sound) but keeps it in the engine table', () => {
+    expect(VISIBLE_PRESETS.map((p) => p.id)).toEqual(['piano', 'violin', 'calido', 'cristal', '8bit', 'nube']);
+    expect(PRESETS.find((p) => p.id === 'guitarra')?.available).toBe(false);
   });
 });

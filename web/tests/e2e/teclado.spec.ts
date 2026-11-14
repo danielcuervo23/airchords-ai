@@ -14,13 +14,13 @@ test('Se puede usar solo con el teclado: flechas para mirar, Enter para elegir, 
 
   // Browsing with the arrows moves the selection but does not change the sound yet.
   await page.keyboard.press('ArrowDown');
-  await expect(page.getByRole('radio', { name: 'Guitarra' })).toBeFocused();
+  await expect(page.getByRole('radio', { name: 'Violín' })).toBeFocused();
   await expect(sound).toHaveAttribute('aria-expanded', 'true');
   await expect(sound).toContainText('Piano');
 
   // Enter confirms, closes and returns focus.
   await page.keyboard.press('Enter');
-  await expect(sound).toContainText('Guitarra');
+  await expect(sound).toContainText('Violín');
   await expect(sound).toHaveAttribute('aria-expanded', 'false');
   await expect(sound).toBeFocused();
 
@@ -30,9 +30,9 @@ test('Se puede usar solo con el teclado: flechas para mirar, Enter para elegir, 
   await page.keyboard.press('Escape');
   await expect(sound).toHaveAttribute('aria-expanded', 'false');
   await expect(sound).toBeFocused();
-  await expect(sound).toContainText('Guitarra');
+  await expect(sound).toContainText('Violín');
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('radio', { name: 'Guitarra' })).toBeChecked();
+  await expect(page.getByRole('radio', { name: 'Violín' })).toBeChecked();
   await page.keyboard.press('Escape');
 
   // Tabbing out of an open sheet closes it.

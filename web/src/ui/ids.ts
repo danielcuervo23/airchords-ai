@@ -1,4 +1,4 @@
-import { PRESETS, type PresetId } from '../audio/presets';
+import { VISIBLE_PRESETS, type PresetId } from '../audio/presets';
 import { ALL_KEYS, type Key } from '../music/theory';
 
 /** Values round-trip through the DOM (radio values), so they are parsed back, never trusted. */
@@ -9,5 +9,5 @@ export function parseKeyId(id: string): Key | null {
 }
 
 export function parsePresetId(id: string): PresetId | null {
-  return PRESETS.find((p) => p.id === id)?.id ?? null;
+  return VISIBLE_PRESETS.find((p) => p.id === id)?.id ?? null;
 }

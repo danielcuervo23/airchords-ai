@@ -3,6 +3,8 @@ export interface Preset {
   id: PresetId;
   name: string;
   behavior: 'sustain' | 'strum';
+  /** false = kept in the engine but not offered in the UI. */
+  available?: false;
   samples?: { baseUrl: string; notes: Record<string, string> };
 }
 
@@ -20,13 +22,17 @@ const VIOLIN_NOTES: Record<string, string> = {
 
 export const PRESETS: Preset[] = [
   { id: 'piano', name: 'Piano', behavior: 'strum', samples: { baseUrl: '/samples/piano/', notes: PIANO_NOTES } },
-  { id: 'guitarra', name: 'Guitarra', behavior: 'strum' }, // synthesized (PluckSynth): no clean CC0/CC-BY guitar source
+  // Synthesized (PluckSynth): no clean CC0/CC-BY guitar source. Hidden in v1: it made no audible sound on desktop or phone.
+  { id: 'guitarra', name: 'Guitarra', behavior: 'strum', available: false },
   { id: 'violin', name: 'Violín', behavior: 'sustain', samples: { baseUrl: '/samples/violin/', notes: VIOLIN_NOTES } },
   { id: 'calido', name: 'Cálido', behavior: 'sustain' },
   { id: 'cristal', name: 'Cristal', behavior: 'sustain' },
   { id: '8bit', name: '8-bit', behavior: 'sustain' },
   { id: 'nube', name: 'Nube', behavior: 'sustain' },
 ];
+
+/** The sounds the UI offers, in order. */
+export const VISIBLE_PRESETS: Preset[] = PRESETS.filter((p) => p.available !== false);
 
 /** Octave shift applied to the chord voicing so every instrument sits in its natural register. */
 export const REGISTER_SHIFT: Partial<Record<PresetId, number>> = { violin: 1 };

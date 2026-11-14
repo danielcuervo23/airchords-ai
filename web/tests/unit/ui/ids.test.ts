@@ -10,6 +10,7 @@ describe('ids coming back from the DOM are validated', () => {
   it('rejects unknown or inherited names', () => {
     expect(parsePresetId('órgano')).toBeNull();
     expect(parsePresetId('constructor')).toBeNull();
+    expect(parsePresetId('guitarra')).toBeNull(); // hidden in v1
     expect(parsePresetId('')).toBeNull();
   });
   it('round-trips all 24 keys and rejects garbage', () => {
