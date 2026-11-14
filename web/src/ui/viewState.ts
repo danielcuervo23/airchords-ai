@@ -16,6 +16,8 @@ export interface GuidedView {
 export interface AutoRow { degree: Degree; symbol: string; numeral: string; name: string; gel: string; current: boolean }
 export interface AutoView { title: string; artist: string; summary: string; rows: AutoRow[] }
 
+export interface FanSwatch { degree: Degree; numeral: string; symbol: string; gel: string; state: 'now' | 'next' | 'rest' }
+
 export interface View {
   chord: ChordView | null;
   /** Prompt shown where the chord would be. Empty while a chord sounds. */
@@ -25,8 +27,27 @@ export interface View {
   /** Text alternative for the washed video. */
   washLabel: string;
   meters: { volume: number; brightness: number };
+  /** The seven swatches, always shown so players learn the signs. */
+  fan: FanSwatch[];
+  fanLabel: string;
   guided?: GuidedView;
   auto?: AutoView;
+}
+
+const DEGREES: readonly Degree[] = [1, 2, 3, 4, 5, 6, 7];
+
+function fanView(key: Key, now: Degree | null, next: Degree | null): { fan: FanSwatch[]; fanLabel: string } {
+  const fan = DEGREES.map((d): FanSwatch => ({
+    degree: d,
+    numeral: romanNumeral(key, d),
+    symbol: chordForDegree(key, d).label,
+    gel: gelVar(d),
+    state: d === now ? 'now' : d === next ? 'next' : 'rest',
+  }));
+  const parts: string[] = [];
+  if (now) parts.push(`ahora ${romanNumeral(key, now)}`);
+  if (next && next !== now) parts.push(`después ${romanNumeral(key, next)}`);
+  return { fan, fanLabel: parts.length ? `Muestrario de acordes: ${parts.join(', ')}` : 'Muestrario de acordes' };
 }
 
 const pct = (x: number): number => Math.round(Math.min(1, Math.max(0, x)) * 100);
@@ -85,8 +106,12 @@ export function toView(s: ControllerState, ctx: ViewCtx): View {
   const anyHand = s.handsVisible.chord || s.handsVisible.expression;
   let status = '';
   if (!chord && ctx.mode !== 'auto') status = anyHand ? 'Haz una seña con la mano derecha' : 'Esperando tus manos…';
+  const guided = ctx.mode === 'guided' && ctx.song ? guidedView(s, ctx.song) : undefined;
+  const fanNow = guided ? (guided.now?.degree ?? null) : (chord?.degree ?? null);
+  const fanNext = guided ? (guided.next?.degree ?? null) : null;
   const view: View = {
     chord,
+    ...fanView(key, fanNow, fanNext),
     status,
     announcement: chord ? `Suena ${chord.name}, grado ${chord.numeral}` : '',
     washLabel: chord
@@ -94,7 +119,7 @@ export function toView(s: ControllerState, ctx: ViewCtx): View {
       : 'Vista de la cámara en espejo',
     meters: { volume: pct(s.expression.volume), brightness: pct(s.expression.brightness) },
   };
-  if (ctx.mode === 'guided' && ctx.song) view.guided = guidedView(s, ctx.song);
+  if (guided) view.guided = guided;
   if (ctx.mode === 'auto' && ctx.song) view.auto = autoView(s, ctx.song);
   return view;
 }
