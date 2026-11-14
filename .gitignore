@@ -13,3 +13,4 @@ web/playwright-report/
 .superpowers/
 .vscode/
 web/.vercel/
+.claude/
