@@ -7,12 +7,11 @@ export interface FaceFrame { landmarks: Landmark[]; matrix: Float32Array /* 4x4 
 export interface VisionFrame { t: number; aspect: number; hands: RawHand[]; face: FaceFrame | null }
 
 /**
- * MediaPipe's Left/Right labels are the opposite of the user's physical hands
- * (assumes the model expects selfie-flipped input while we send raw frames).
- * UNVERIFIED: confirm with a real camera at the user checkpoint and flip if wrong.
+ * Verified with a real camera on 2026-11-14: MediaPipe labels on the raw (unflipped)
+ * frame already match the user's physical hands.
  * Pass this as `labelsSwapped` to assignHands.
  */
-export const HANDEDNESS_LABELS_SWAPPED = true;
+export const HANDEDNESS_LABELS_SWAPPED = false;
 
 const BASE = `${import.meta.env.BASE_URL}mediapipe/`;
 const GESTURE_MODEL = `${BASE}models/gesture_recognizer.task`;

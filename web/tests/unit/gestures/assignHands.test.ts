@@ -14,7 +14,7 @@ function hand(label: 'Left' | 'Right', score: number, overrides: Partial<{ x: nu
 // physical hands. The user's physical right hand always plays the chords, so:
 //   labelsSwapped = true  -> label 'Left' is the physical right hand (chordHand)
 //   labelsSwapped = false -> label 'Right' is the physical right hand (chordHand)
-// Which value the real camera needs is UNVERIFIED (see HANDEDNESS_LABELS_SWAPPED).
+// The real camera needs `false` (verified 2026-11-14; see HANDEDNESS_LABELS_SWAPPED).
 describe('assignHands', () => {
   it('labelsSwapped true: label Left is the physical right hand (chordHand)', () => {
     const left = hand('Left', 0.9);
