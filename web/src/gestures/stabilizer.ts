@@ -11,7 +11,8 @@ export class Stabilizer<T> {
   }
 
   update(v: T | null, nowMs: number): T | null {
-    if (!this.hasCandidate || v !== this.candidate) {
+    if (!Number.isFinite(nowMs)) return this.cur;
+    if (!this.hasCandidate || v !== this.candidate || nowMs < this.candidateSince) {
       this.hasCandidate = true;
       this.candidate = v;
       this.candidateSince = nowMs;

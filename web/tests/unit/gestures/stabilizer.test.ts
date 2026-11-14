@@ -39,4 +39,22 @@ describe('Stabilizer', () => {
     expect(s.update(null, 179)).toBe(3);
     expect(s.update(null, 180)).toBeNull();
   });
+
+  it('re-anchors the candidate timer if the clock goes backwards', () => {
+    const s = new Stabilizer<number>({ minStableMs: 80 });
+    s.update(3, 1000);
+    expect(s.update(3, 100)).toBeNull();
+    expect(s.update(3, 179)).toBeNull();
+    expect(s.update(3, 180)).toBe(3);
+  });
+
+  it('ignores updates with non-finite time', () => {
+    const s = new Stabilizer<number>({ minStableMs: 80 });
+    s.update(3, 0);
+    s.update(3, 80);
+    expect(s.update(5, NaN)).toBe(3);
+    expect(s.update(5, Infinity)).toBe(3);
+    expect(s.update(5, 100)).toBe(3);
+    expect(s.update(5, 180)).toBe(5);
+  });
 });

@@ -61,4 +61,28 @@ describe('ExpressionTracker', () => {
     const e2 = t.update(inf);
     expect(Number.isFinite(e2.volume) && Number.isFinite(e2.brightness)).toBe(true);
   });
+
+  it('corrects for aspect ratio: physical 45 deg on 16:9 gives brightness ~1', () => {
+    const lm = hand({ wristY: 0.5, dx: 0.1, dy: (0.1 * 16) / 9 });
+    expect(run(new ExpressionTracker({ aspect: 16 / 9 }), lm).brightness).toBeCloseTo(1, 3);
+    // without correction it is still saturated, but a 30 deg physical tilt must not be
+    const dx = 0.1;
+    const dy = (dx * Math.tan(Math.PI / 6) * 16) / 9;
+    const b = run(new ExpressionTracker({ aspect: 16 / 9 }), hand({ wristY: 0.5, dx, dy })).brightness;
+    expect(b).toBeCloseTo((30 + 45) / 90, 3);
+  });
+  it('ignores invalid aspect (NaN, 0, negative) and uses 1', () => {
+    const lm = hand({ wristY: 0.5, dx: 0.2, dy: 0.1 });
+    const ref = run(new ExpressionTracker(), lm).brightness;
+    for (const a of [NaN, 0, -2, Infinity]) {
+      expect(run(new ExpressionTracker({ aspect: a }), lm).brightness).toBeCloseTo(ref, 6);
+    }
+  });
+  it('falls back to smoothing 0.3 when smoothing is invalid', () => {
+    for (const sm of [NaN, 0, -1, 2, Infinity]) {
+      const t = new ExpressionTracker({ smoothing: sm });
+      t.update(null);
+      expect(t.update(hand({ wristY: 0.15 })).volume).toBeCloseTo(0.79, 6);
+    }
+  });
 });
