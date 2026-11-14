@@ -27,9 +27,22 @@ export function creditsScreen(onClose: () => void): { el: HTMLElement; load(): P
   const el = h('section', { class: 'screen credits', 'aria-label': 'Créditos' },
     h('header', { class: 'appbar' }, wordmark(), navPill('close', 'Cerrar', onClose)), body);
 
+  /** Replacing the h1 drops focus to <body>; put it back if the visitor is on this screen. */
+  const refocus = (): void => {
+    if (!el.hidden) body.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true });
+  };
+
   let loaded = false;
-  async function load(): Promise<void> {
-    if (loaded) return;
+  let inflight: Promise<void> | null = null;
+  function load(): Promise<void> {
+    if (loaded) return Promise.resolve();
+    return (inflight ??= fetchAndRender().finally(() => {
+      inflight = null;
+      refocus();
+    }));
+  }
+
+  async function fetchAndRender(): Promise<void> {
     try {
       const res = await fetch(`${import.meta.env.BASE_URL}CREDITS.md`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

@@ -20,6 +20,7 @@ export interface InstrumentActions {
   onGuide(): void;
   onCredits(): void;
   onRetry(): void;
+  onUnlockAudio(): void;
 }
 
 export interface ControlsView {
@@ -73,12 +74,14 @@ export class InstrumentView {
   private readonly volMeter: HTMLElement;
   private readonly briMeter: HTMLElement;
   private readonly overlay = h('div', { class: 'overlay', hidden: true });
+  private readonly audioGate: HTMLButtonElement;
+  private readonly resizeObserver: ResizeObserver;
   private readonly cueTitle = h('b', {});
   private readonly cueSub = h('span', { class: 'cue-sub' });
   private readonly cueTag = h('span', { class: 'tag nums' });
   private readonly fan = h('ol', { class: 'book' });
   private readonly guided = h('div', { class: 'guided', 'data-testid': 'guided-cue', hidden: true });
-  private readonly feedback = h('p', { class: 'feedback', 'aria-live': 'polite' });
+  private readonly feedback = h('p', { class: 'feedback', 'aria-live': 'polite', 'aria-atomic': 'true' });
   private readonly hint = h('p', { class: 'hint', hidden: true });
   private readonly restart: HTMLButtonElement;
   private readonly steps = h('div', { class: 'steps' });
@@ -128,6 +131,8 @@ export class InstrumentView {
         h('div', { class: 'row1' }, this.sym, this.deg), this.chordName, this.statusEl),
       h('span', { class: 'mirror' }, 'Espejo'),
       this.overlay,
+      // After the overlay: CSS hides it while a loading/error plate is up (any tap still unlocks).
+      (this.audioGate = h('button', { type: 'button', class: 'audio-gate', hidden: true })),
     );
 
     this.restart = h('button', { type: 'button', class: 'btn-secondary', hidden: true }, icon('retry'), 'Tocar otra vez');
@@ -173,7 +178,9 @@ export class InstrumentView {
     this.el = h('section', { class: 'instrument', 'aria-labelledby': 'instrument-title' },
       h('h1', { id: 'instrument-title', class: 'sr-only', tabindex: -1 }, 'Instrumento AirChords'), this.stage, panel, this.live);
 
-    new ResizeObserver(() => this.layoutMedia()).observe(this.stage);
+    this.audioGate.addEventListener('click', () => actions.onUnlockAudio());
+    this.resizeObserver = new ResizeObserver(() => this.layoutMedia());
+    this.resizeObserver.observe(this.stage);
     this.video.addEventListener('loadedmetadata', () => this.layoutMedia());
     this.video.addEventListener('resize', () => this.layoutMedia());
   }
@@ -203,6 +210,16 @@ export class InstrumentView {
     if (kind === 'error') (plate.querySelector('button') as HTMLButtonElement).focus();
   }
 
+  /** "Toca para activar el sonido" over the video while the audio context is not running. */
+  setAudioNotice(text: string | null): void {
+    this.audioGate.hidden = text === null;
+    setText(this.audioGate, text ?? '');
+  }
+
+  dispose(): void {
+    this.resizeObserver.disconnect();
+  }
+
   drawHands(hands: readonly RawHand[]): void {
     this.hands.draw(hands);
   }
@@ -221,7 +238,8 @@ export class InstrumentView {
     setText(this.chordName, v.chord?.context ?? '');
     setText(this.statusEl, v.status);
     this.statusEl.hidden = v.status === '';
-    if (v.announcement) setText(this.live, v.announcement);
+    // Cleared while silent, so the same chord played again is announced again.
+    setText(this.live, v.announcement);
 
     this.meter(this.volMeter, v.meters.volume);
     this.meter(this.briMeter, v.meters.brightness);

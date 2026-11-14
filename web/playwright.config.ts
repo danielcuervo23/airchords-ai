@@ -18,7 +18,7 @@ export default defineConfig({
     { name: 'telefono', use: { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: false } },
   ],
   webServer: {
-    command: 'npx vite build --outDir dist-e2e --emptyOutDir && npx vite preview --outDir dist-e2e --port 5173 --strictPort',
+    command: 'npx vite build --mode e2e --outDir dist-e2e --emptyOutDir && npx vite preview --outDir dist-e2e --port 5173 --strictPort',
     url: 'http://localhost:5173',
     env: { VITE_E2E: '1' },
     reuseExistingServer: false,

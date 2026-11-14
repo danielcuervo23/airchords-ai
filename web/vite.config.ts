@@ -8,8 +8,8 @@ if (shouldIncludeRecorder(process.env)) {
   input.recorder = resolve(import.meta.dirname, 'recorder.html');
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   // A literal constant, so the bundler removes the fake-tracker branch from real builds.
-  define: { __E2E__: JSON.stringify(shouldUseFakeTracker(process.env)) },
+  define: { __E2E__: JSON.stringify(shouldUseFakeTracker(process.env, mode)) },
   build: { rollupOptions: { input } },
-});
+}));

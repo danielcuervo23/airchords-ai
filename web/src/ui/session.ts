@@ -1,32 +1,43 @@
 /**
  * Runtime wiring for the instrument, loaded with a dynamic import so the Inicio screen paints
- * without Tone.js or MediaPipe. main.ts prefetches it while the visitor reads Inicio, so the
- * "Empezar" click can usually start the audio synchronously (iOS needs a user gesture).
+ * without Tone.js or MediaPipe. main.ts creates and resumes the AudioContext inside the
+ * "Empezar" click (iOS needs a user gesture) and hands it over here, so it does not matter
+ * whether this chunk was already prefetched. If the context is still not running (or iOS
+ * interrupts it later, e.g. a phone call), the instrument asks for a tap.
  */
+import * as Tone from 'tone';
 import { InstrumentController, type PlayMode } from '../app/controller';
 import { ToneEngine } from '../audio/engine';
 import { PRESETS, type PresetId } from '../audio/presets';
 import { ALL_KEYS, type Key } from '../music/theory';
 import { SONGS, type Song } from '../songs';
 import type { VisionFrame } from '../vision/tracker';
+import { audioNotice } from './audioNotice';
 import { cameraErrorMessage } from './cameraError';
+import { keyId, parseKeyId, parsePresetId } from './ids';
 import { BPM_MAX, BPM_MIN, InstrumentView, type ControlsView } from './instrument';
 import { keyNameEs } from './labels';
 import { toView, type ModeKind } from './viewState';
 
-export interface AudioHandle { engine: ToneEngine; ready: Promise<void> }
+export interface AudioHandle { engine: ToneEngine; context: BaseAudioContext; ready: Promise<void> }
 export interface Nav { onGuide(): void; onCredits(): void }
 export interface Session { el: HTMLElement; key(): Key; dispose(): void }
 
 interface TrackerLike { start(onFrame: (f: VisionFrame) => void, onError?: (e: unknown) => void): void; stop(): void; close(): void }
 
-/** Call first thing in the "Empezar" click handler. */
-export function unlockAudio(): AudioHandle {
+/** Same threshold as the controller's watchdog: no frame for this long means the hands are gone. */
+const STALE_FRAME_MS = 500;
+
+/**
+ * Builds the engine on the AudioContext that was resumed inside the click.
+ * Tone must use that context before any node is created, so this runs before `new ToneEngine()`.
+ */
+export function unlockAudio(context: AudioContext | null): AudioHandle {
+  if (context) Tone.setContext(context);
   const engine = new ToneEngine();
-  return { engine, ready: engine.start() };
+  return { engine, context: Tone.getContext().rawContext as BaseAudioContext, ready: engine.start() };
 }
 
-const keyId = (k: Key): string => `${k.tonic}|${k.mode}`;
 const clampBpm = (n: number): number => Math.min(BPM_MAX, Math.max(BPM_MIN, Math.round(n)));
 
 async function createTracker(video: HTMLVideoElement): Promise<TrackerLike> {
@@ -56,13 +67,18 @@ export function startSession(audio: AudioHandle, nav: Nav): Session {
   let tracker: TrackerLike | null = null;
   let raf = 0;
   let disposed = false;
+  let lastFrameAt = 0;
+  let handsDrawn = false;
 
   const controller = new InstrumentController({ engine: audio.engine, now: () => performance.now(), key });
 
   const view = new InstrumentView({
-    onPreset: (id) => void choosePreset(id as PresetId),
-    onKey: (id) => {
-      const k = ALL_KEYS.find((x) => keyId(x) === id);
+    onPreset: (value) => {
+      const id = parsePresetId(value);
+      if (id) void choosePreset(id);
+    },
+    onKey: (value) => {
+      const k = parseKeyId(value);
       if (!k) return;
       key = k;
       controller.setKey(k);
@@ -80,6 +96,7 @@ export function startSession(audio: AudioHandle, nav: Nav): Session {
       applyMode();
     },
     onBpm: (n) => {
+      if (!Number.isFinite(n)) return;
       bpm = clampBpm(n);
       if (mode === 'auto') applyMode(); // the controller reads tempo from the song: restart it at the new tempo
     },
@@ -87,6 +104,7 @@ export function startSession(audio: AudioHandle, nav: Nav): Session {
     onGuide: nav.onGuide,
     onCredits: nav.onCredits,
     onRetry: () => void boot(),
+    onUnlockAudio: () => unlock(),
   });
 
   view.setOptions(
@@ -136,13 +154,52 @@ export function startSession(audio: AudioHandle, nav: Nav): Session {
   // The mouth gesture changes the preset inside the controller; subscribe keeps the label in sync.
   controller.subscribe(() => render());
 
+  // --- Audio gate: "Toca para activar el sonido" while the context is not running ---
+  const ctx = audio.context;
+  let armed = false;
+  const disarm = (): void => {
+    armed = false;
+    document.removeEventListener('pointerdown', unlock, true);
+    document.removeEventListener('keydown', unlock, true);
+  };
+  function unlock(): void {
+    disarm();
+    // resume() directly: Tone only resumes 'suspended', and iOS can also report 'interrupted'.
+    Promise.all([ctx instanceof AudioContext ? ctx.resume() : undefined, audio.engine.start()])
+      .catch((e: unknown) => console.error('El audio no pudo arrancar', e))
+      .finally(syncGate); // still not running? the gate and the listeners come back
+  }
+  function syncGate(): void {
+    if (disposed) return;
+    const notice = audioNotice(ctx.state);
+    view.setAudioNotice(notice);
+    if (notice && !armed) {
+      armed = true;
+      // One-shot: the next tap or key anywhere is a user gesture that can resume the context.
+      document.addEventListener('pointerdown', unlock, true);
+      document.addEventListener('keydown', unlock, true);
+    } else if (!notice) {
+      disarm();
+    }
+  }
+  ctx.addEventListener('statechange', syncGate);
+
+  // --- Frames and the animation loop ---
+  function drawHands(hands: VisionFrame['hands']): void {
+    view.drawHands(hands);
+    handsDrawn = hands.length > 0;
+  }
+
   function onFrame(f: VisionFrame): void {
+    lastFrameAt = performance.now();
     controller.onFrame(f);
-    view.drawHands(f.hands);
+    drawHands(f.hands);
   }
 
   function loop(): void {
     controller.tick();
+    // Same rule as the controller's watchdog: frames stopped, so the drawn hands are stale.
+    if (handsDrawn && performance.now() - lastFrameAt > STALE_FRAME_MS) drawHands([]);
     raf = requestAnimationFrame(loop);
   }
 
@@ -150,47 +207,61 @@ export function startSession(audio: AudioHandle, nav: Nav): Session {
     if (disposed) return;
     view.showOverlay('loading', 'Encendiendo la cámara…');
     if (!stream) {
+      let s: MediaStream;
       try {
-        stream = await openCamera(view.video);
+        s = await openCamera(view.video);
       } catch (e) {
-        view.showOverlay('error', cameraErrorMessage(e));
-        return;
-      }
-    }
-    if (!tracker) {
-      view.showOverlay('loading', 'Preparando el reconocedor de manos… La primera vez puede tardar unos segundos.');
-      try {
-        tracker = await createTracker(view.video);
-      } catch (e) {
-        console.error(e);
-        view.showOverlay('error', 'No pudimos preparar el reconocedor de manos. Revisa tu conexión a internet y pulsa Reintentar.');
+        if (!disposed) view.showOverlay('error', cameraErrorMessage(e));
         return;
       }
       if (disposed) {
-        tracker.close();
+        s.getTracks().forEach((t) => t.stop()); // the page went away while the permission prompt was open
         return;
       }
+      stream = s;
+    }
+    if (!tracker) {
+      view.showOverlay('loading', 'Preparando el reconocedor de manos… La primera vez puede tardar unos segundos.');
+      let t: TrackerLike;
+      try {
+        t = await createTracker(view.video);
+      } catch (e) {
+        console.error(e);
+        if (!disposed) view.showOverlay('error', 'No pudimos preparar el reconocedor de manos. Revisa tu conexión a internet y pulsa Reintentar.');
+        return;
+      }
+      if (disposed) {
+        t.close();
+        return;
+      }
+      tracker = t;
       tracker.start(onFrame, (e) => console.error('Error de seguimiento', e));
     }
     view.showOverlay(null);
   }
 
-  const onVisibility = (): void => controller.onVisibilityChange(document.hidden);
+  const onVisibility = (): void => {
+    controller.onVisibilityChange(document.hidden);
+    if (document.hidden) drawHands([]);
+  };
   document.addEventListener('visibilitychange', onVisibility);
 
   function dispose(): void {
     if (disposed) return;
     disposed = true;
     cancelAnimationFrame(raf);
+    disarm();
+    ctx.removeEventListener('statechange', syncGate);
     document.removeEventListener('visibilitychange', onVisibility);
     tracker?.close();
     stream?.getTracks().forEach((t) => t.stop());
+    view.dispose();
     controller.dispose(); // also disposes the audio engine
   }
 
-  audio.ready.catch((e) => console.error('El audio no pudo arrancar', e));
+  audio.ready.catch((e: unknown) => console.error('El audio no pudo arrancar', e)).finally(syncGate);
   void choosePreset(PRESETS[0]!.id);
-  render();
+  render(); // the audio gate is first checked when audio.ready settles (no flash while resume is pending)
   raf = requestAnimationFrame(loop);
   void boot();
 

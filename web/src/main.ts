@@ -60,22 +60,40 @@ async function start(): Promise<void> {
     show('instrument');
     return;
   }
-  // iOS only unlocks audio inside the click: when the chunk is already here this runs synchronously.
-  let audio = lib?.unlockAudio() ?? null;
+  // iOS only lets audio start inside the user gesture. Create and resume a bare AudioContext
+  // synchronously here (no Tone needed); the instrument chunk hands it to Tone when it loads.
+  const ctx = primeAudio();
+  let audio: ReturnType<SessionLib['unlockAudio']> | null = null;
   home.cta.disabled = true;
   home.cta.setAttribute('aria-busy', 'true');
   try {
     const m = lib ?? (await loadLib());
-    audio ??= m.unlockAudio();
+    audio = m.unlockAudio(ctx);
     session = m.startSession(audio, { onGuide: openGuide, onCredits: openCredits });
     mount('instrument', session.el);
     show('instrument');
   } catch (e) {
     console.error(e);
+    audio?.engine.dispose(); // do not leak audio nodes if the session could not start
     home.cta.after(errorNote());
   } finally {
     home.cta.disabled = false;
     home.cta.removeAttribute('aria-busy');
+  }
+}
+
+let audioCtx: AudioContext | null = null;
+
+/** Must run synchronously inside the click handler. Reuses one context across retries. */
+function primeAudio(): AudioContext | null {
+  try {
+    const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctor) return null; // Tone will report the problem; the instrument still shows
+    audioCtx ??= new Ctor({ latencyHint: 'interactive' });
+    void audioCtx.resume().catch(() => undefined); // the instrument shows "Toca para activar el sonido" if this did not count
+    return audioCtx;
+  } catch {
+    return null;
   }
 }
 
