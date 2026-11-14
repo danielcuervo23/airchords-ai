@@ -38,19 +38,9 @@ function hand(label: 'Left' | 'Right', gesture: GestureName | null = null): RawH
   return { label, score: 0.9, landmarks, gesture: gesture ? { name: gesture, score: 0.9 } : null };
 }
 
-function faceLandmarks(open: boolean) {
-  const lm = Array.from({ length: 478 }, () => ({ x: 0.5, y: 0.5, z: 0 }));
-  lm[13] = { x: 0.5, y: 0.5, z: 0 };
-  lm[14] = { x: 0.5, y: open ? 0.6 : 0.5, z: 0 };
-  lm[61] = { x: 0.4, y: 0.55, z: 0 };
-  lm[291] = { x: 0.5, y: 0.55, z: 0 };
-  return lm;
+function frame(hands: RawHand[], aspect = 4 / 3): VisionFrame {
+  return { t: 0, aspect, hands };
 }
-
-function frame(hands: RawHand[], face: VisionFrame['face'] = null, aspect = 4 / 3): VisionFrame {
-  return { t: 0, aspect, hands, face };
-}
-const faceFrame = (open: boolean): VisionFrame['face'] => ({ landmarks: faceLandmarks(open), matrix: new Float32Array(16) });
 
 const song: Song = {
   id: 's', title: 's', artist: 'a', key: G_MAJOR, bpm: 120,
@@ -129,41 +119,23 @@ describe('InstrumentController', () => {
       const mk = () => new InstrumentController({ engine: new FakeEngine(), now: () => 0, key: C_MAJOR });
       const a = mk();
       const b = mk();
-      a.onFrame(frame([tilted], null, 1.0));
-      a.onFrame(frame([tilted], null, 2.0));
-      b.onFrame(frame([tilted], null, 2.0));
+      a.onFrame(frame([tilted], 1.0));
+      a.onFrame(frame([tilted], 2.0));
+      b.onFrame(frame([tilted], 2.0));
       // a fresh tracker at 2.0 and a recreated one see the first frame at 2.0 the same way
       const fresh = b.getState().expression.brightness;
       const reset = new InstrumentController({ engine: new FakeEngine(), now: () => 0, key: C_MAJOR });
-      reset.onFrame(frame([tilted], null, 1.0));
-      reset.onFrame(frame([tilted], null, 2.0));
+      reset.onFrame(frame([tilted], 1.0));
+      reset.onFrame(frame([tilted], 2.0));
       expect(reset.getState().expression.brightness).toBeCloseTo(fresh, 10);
       expect(a.getState().expression.brightness).toBeCloseTo(fresh, 10);
     });
   });
 
-  describe('mouth', () => {
-    it('cycles to the next preset on a rising edge only', () => {
-      at(0, frame([], faceFrame(true)));
-      at(16, frame([], faceFrame(true)));
-      expect(engine.presets).toEqual([PRESETS[1]!.id]);
-      at(32, frame([], faceFrame(false)));
-      at(48, frame([], faceFrame(true)));
-      expect(engine.presets).toEqual([PRESETS[1]!.id, PRESETS[2]!.id]);
-    });
-
-    it('wraps from the last preset to the first', async () => {
-      await c.setPreset(PRESETS.at(-1)!.id);
-      engine.presets = [];
-      at(0, frame([], faceFrame(true)));
-      expect(engine.presets).toEqual([PRESETS[0]!.id]);
-    });
-
+  describe('sound changes', () => {
     it('keeps the old preset when setPreset rejects', async () => {
       engine.failPreset = true;
-      at(0, frame([], faceFrame(true)));
-      await Promise.resolve();
-      await Promise.resolve();
+      await expect(c.setPreset('cristal')).rejects.toThrow('boom');
       expect(c.getState().preset).toBe(PRESETS[0]!.id);
     });
 
@@ -391,13 +363,6 @@ describe('InstrumentController', () => {
       expect(engine.calls.length).toBe(n);
     });
 
-    it('mouth must re-arm when the face disappears', () => {
-      at(0, frame([], faceFrame(true)));
-      at(16, frame([]));
-      at(32, frame([], faceFrame(true)));
-      expect(engine.presets.length).toBe(2);
-    });
-
     it('state expression is a copy', () => {
       at(0, frame([]));
       const s = c.getState();
@@ -407,10 +372,10 @@ describe('InstrumentController', () => {
   });
 
   describe('robustness', () => {
-    it('never throws on empty hands, null face or NaN aspect', () => {
-      expect(() => at(0, frame([], null, NaN))).not.toThrow();
-      expect(() => at(10, frame([hand('Left', 'Victory')], null, NaN))).not.toThrow();
-      expect(() => at(20, frame([], null, 0))).not.toThrow();
+    it('never throws on empty hands or a NaN aspect', () => {
+      expect(() => at(0, frame([], NaN))).not.toThrow();
+      expect(() => at(10, frame([hand('Left', 'Victory')], NaN))).not.toThrow();
+      expect(() => at(20, frame([], 0))).not.toThrow();
     });
   });
 });

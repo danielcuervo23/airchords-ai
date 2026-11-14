@@ -1,10 +1,9 @@
-import { FaceLandmarker, FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
+import { FilesetResolver, GestureRecognizer } from '@mediapipe/tasks-vision';
 import type { RawHand } from '../gestures/assignHands';
-import type { Landmark } from '../gestures/types';
 import { toRawHands } from './toRawHands';
 
-export interface FaceFrame { landmarks: Landmark[]; matrix: Float32Array /* 4x4 column-major */ }
-export interface VisionFrame { t: number; aspect: number; hands: RawHand[]; face: FaceFrame | null }
+/** One camera frame's result. v1 tracks hands only (no face model: the mouth switch was removed). */
+export interface VisionFrame { t: number; aspect: number; hands: RawHand[] }
 
 /**
  * Verified with a real camera on 2026-11-14: MediaPipe labels on the raw (unflipped)
@@ -15,7 +14,6 @@ export const HANDEDNESS_LABELS_SWAPPED = false;
 
 const BASE = `${import.meta.env.BASE_URL}mediapipe/`;
 const GESTURE_MODEL = `${BASE}models/gesture_recognizer.task`;
-const FACE_MODEL = `${BASE}models/face_landmarker.task`;
 
 type Fileset = Awaited<ReturnType<typeof FilesetResolver.forVisionTasks>>;
 
@@ -34,48 +32,20 @@ async function createGestures(fileset: Fileset): Promise<GestureRecognizer> {
   }
 }
 
-async function createFace(fileset: Fileset): Promise<FaceLandmarker> {
-  const make = (delegate: 'GPU' | 'CPU') =>
-    FaceLandmarker.createFromOptions(fileset, {
-      baseOptions: { modelAssetPath: FACE_MODEL, delegate },
-      numFaces: 1,
-      outputFacialTransformationMatrixes: true,
-      runningMode: 'VIDEO',
-    });
-  try {
-    return await make('GPU');
-  } catch (e) {
-    console.warn('GPU delegate failed, falling back to CPU', e);
-    return make('CPU');
-  }
-}
-
 export class Tracker {
   private cancel: (() => void) | null = null;
   private running = false;
   private closed = false;
-  private frameCount = 0;
-  private lastFace: FaceFrame | null = null;
   private lastTs = -1;
 
   private constructor(
     private readonly video: HTMLVideoElement,
     private readonly gestures: GestureRecognizer,
-    private readonly faces: FaceLandmarker,
-    private readonly faceEvery: number,
   ) {}
 
-  static async create(video: HTMLVideoElement, opts: { faceEveryNFrames?: number } = {}): Promise<Tracker> {
+  static async create(video: HTMLVideoElement): Promise<Tracker> {
     const fileset = await FilesetResolver.forVisionTasks(`${BASE}wasm`);
-    const [g, f] = await Promise.allSettled([createGestures(fileset), createFace(fileset)]);
-    if (g.status === 'rejected' || f.status === 'rejected') {
-      if (g.status === 'fulfilled') g.value.close();
-      if (f.status === 'fulfilled') f.value.close();
-      throw g.status === 'rejected' ? g.reason : (f as PromiseRejectedResult).reason;
-    }
-    const gestures = g.value;
-    const faces = f.value;
-    return new Tracker(video, gestures, faces, Math.max(1, opts.faceEveryNFrames ?? 2));
+    return new Tracker(video, await createGestures(fileset));
   }
 
   start(onFrame: (f: VisionFrame) => void, onError?: (e: unknown) => void): void {
@@ -115,7 +85,6 @@ export class Tracker {
     this.stop();
     this.closed = true;
     this.gestures.close();
-    this.faces.close();
   }
 
   private step(onFrame: (f: VisionFrame) => void): void {
@@ -124,18 +93,7 @@ export class Tracker {
     const t = Math.max(performance.now(), this.lastTs + 1); // MediaPipe needs increasing timestamps
     this.lastTs = t;
     const hands = toRawHands(this.gestures.recognizeForVideo(v, t));
-    if (this.frameCount++ % this.faceEvery === 0) this.lastFace = this.readFace(t);
-    onFrame({ t, aspect: v.videoWidth / v.videoHeight, hands, face: this.lastFace });
+    onFrame({ t, aspect: v.videoWidth / v.videoHeight, hands });
   }
 
-  private readFace(t: number): FaceFrame | null {
-    const r = this.faces.detectForVideo(this.video, t);
-    const points = r.faceLandmarks[0];
-    const m = r.facialTransformationMatrixes[0];
-    if (!points || !m) return null;
-    return {
-      landmarks: points.map(({ x, y, z }) => ({ x, y, z })),
-      matrix: Float32Array.from(m.data),
-    };
-  }
 }

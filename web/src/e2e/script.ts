@@ -20,6 +20,5 @@ export function scriptedFrame(elapsedMs: number): VisionFrame {
     t: elapsedMs,
     aspect: 4 / 3,
     hands: elapsedMs >= HANDS_AFTER_MS ? [RIGHT_POINTING] : [],
-    face: null,
   };
 }

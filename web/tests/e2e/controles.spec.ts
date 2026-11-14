@@ -6,6 +6,9 @@ test('Cambiar el sonido actualiza la etiqueta', async ({ page }) => {
   const picker = page.getByRole('button', { name: /^Sonido/ });
   await expect(picker).toContainText('Piano');
   await picker.click();
+  // v1 shows six sounds: Guitarra is hidden (it made no sound).
+  await expect(page.getByRole('radiogroup', { name: 'Sonido' }).getByRole('radio')).toHaveCount(6);
+  await expect(page.getByRole('radio', { name: 'Guitarra' })).toHaveCount(0);
   await page.getByRole('radio', { name: 'Cristal' }).check();
   await expect(picker).toContainText('Cristal');
 });
@@ -37,4 +40,11 @@ test('El selector de tono ofrece las 24 tonalidades', async ({ page }) => {
   await expect(page.getByRole('radiogroup', { name: 'Tono' }).getByRole('radio')).toHaveCount(24);
   await page.getByRole('radio', { name: 'Sol mayor' }).check();
   await expect(page.getByRole('button', { name: /^Tono/ })).toContainText('Sol mayor');
+});
+
+test('Ningún texto pide abrir la boca: el sonido solo cambia con el selector', async ({ page }) => {
+  await start(page);
+  await expect(page.locator('body')).not.toContainText(/boca/i);
+  await page.getByRole('button', { name: /Guía/ }).first().click();
+  await expect(page.getByRole('region', { name: 'Guía de gestos' })).not.toContainText(/boca/i);
 });

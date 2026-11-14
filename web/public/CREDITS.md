@@ -18,7 +18,7 @@
 - Sintetizada en el navegador con PluckSynth de Tone.js (MIT, https://github.com/Tonejs/Tone.js). No usa muestras: no se encontró una fuente de guitarra con licencia CC0/CC-BY clara.
 
 ## MediaPipe
-- Biblioteca @mediapipe/tasks-vision y los modelos gesture_recognizer y face_landmarker (manos y boca), que corren en tu dispositivo.
+- Biblioteca @mediapipe/tasks-vision y el modelo gesture_recognizer (señas de las manos), que corren en tu dispositivo.
 - Autor: The MediaPipe Authors (Google)
 - Licencia: Apache 2.0 (https://www.apache.org/licenses/LICENSE-2.0)
 - Modificaciones: ninguna. Se copian tal cual a public/mediapipe (scripts/fetch-mediapipe.mjs).

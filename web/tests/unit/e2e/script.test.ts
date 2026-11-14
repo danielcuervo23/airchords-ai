@@ -13,7 +13,6 @@ describe('scripted e2e frames', () => {
     const { chordHand } = assignHands(f.hands, { labelsSwapped: false });
     expect(chordHand).not.toBeNull();
     expect(degreeFromGesture(chordHand!.gesture)).toBe(1);
-    expect(f.face).toBeNull();
     expect(f.aspect).toBeCloseTo(4 / 3);
   });
 });

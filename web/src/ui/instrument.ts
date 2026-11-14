@@ -144,7 +144,7 @@ export class InstrumentView {
       b.addEventListener('click', () => actions.onMode(m.kind));
       return [m.kind, b] as const;
     }));
-    this.soundPicker = new Picker('Sonido', 'Sonido · abre la boca para cambiar', (v) => actions.onPreset(v));
+    this.soundPicker = new Picker('Sonido', 'Sonido', (v) => actions.onPreset(v));
     this.keyPicker = new Picker('Tono', 'Tono', (v) => actions.onKey(v), 2);
     this.songPicker = new Picker('Canción', 'Canción', (v) => actions.onSong(v));
     this.songWrap = h('div', { class: 'song', hidden: true }, this.songPicker.el);

@@ -8,7 +8,7 @@
 import * as Tone from 'tone';
 import { InstrumentController, type PlayMode } from '../app/controller';
 import { ToneEngine } from '../audio/engine';
-import { PRESETS, type PresetId } from '../audio/presets';
+import { VISIBLE_PRESETS, type PresetId } from '../audio/presets';
 import { ALL_KEYS, type Key } from '../music/theory';
 import { SONGS, type Song } from '../songs';
 import type { VisionFrame } from '../vision/tracker';
@@ -108,7 +108,7 @@ export function startSession(audio: AudioHandle, nav: Nav): Session {
   });
 
   view.setOptions(
-    PRESETS.map((p, i) => ({ value: p.id, label: p.name, prefix: `N.º ${String(i + 1).padStart(2, '0')}` })),
+    VISIBLE_PRESETS.map((p, i) => ({ value: p.id, label: p.name, prefix: `N.º ${String(i + 1).padStart(2, '0')}` })),
     ALL_KEYS.map((k) => ({ value: keyId(k), label: keyNameEs(k) })),
     SONGS.map((s) => ({ value: s.id, label: s.title, detail: s.artist })),
   );
@@ -151,7 +151,7 @@ export function startSession(audio: AudioHandle, nav: Nav): Session {
     }
   }
 
-  // The mouth gesture changes the preset inside the controller; subscribe keeps the label in sync.
+  // Re-render whenever the controller's state changes (chord, hands, loaded preset).
   controller.subscribe(() => render());
 
   // --- Audio gate: "Toca para activar el sonido" while the context is not running ---
@@ -260,7 +260,7 @@ export function startSession(audio: AudioHandle, nav: Nav): Session {
   }
 
   audio.ready.catch((e: unknown) => console.error('El audio no pudo arrancar', e)).finally(syncGate);
-  void choosePreset(PRESETS[0]!.id);
+  void choosePreset(VISIBLE_PRESETS[0]!.id);
   render(); // the audio gate is first checked when audio.ready settles (no flash while resume is pending)
   raf = requestAnimationFrame(loop);
   void boot();

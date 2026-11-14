@@ -25,7 +25,6 @@ export function guideScreen(key: Key, onClose: () => void): HTMLElement {
       h('div', { class: 'foot' },
         h('p', {}, 'Mano abajo: silencio.'),
         h('p', {}, 'Mano izquierda: altura = volumen, giro = brillo.'),
-        h('p', {}, 'Boca abierta: siguiente sonido.'),
         h('p', {}, 'En modo guiado, para repetir el mismo acorde baja la mano y vuelve a hacer la seña.'))),
   );
 }
