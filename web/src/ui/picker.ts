@@ -22,6 +22,7 @@ export class Picker {
   private readonly name = `picker-${++uid}`;
   private options: PickerOption[] = [];
   private value = '';
+  private pointer = false;
 
   constructor(
     title: string,
@@ -41,22 +42,37 @@ export class Picker {
     this.el = h('div', { class: 'picker' }, this.button, this.sheet);
 
     this.button.addEventListener('click', () => (this.isOpen() ? this.close(true) : this.open()));
-    this.group.addEventListener('change', (e) => {
-      const input = e.target as HTMLInputElement;
-      this.close(true);
-      if (input.value !== this.value) this.onPick(input.value);
-    });
-    // Clicking the already-checked option does not fire "change"; it should still close the sheet.
+    // Arrow keys only move the checked radio (browsing). A pointer tap, Enter or Space commits.
+    // Browsers also fire "click" for arrow-key moves, so a click only commits after a pointerdown.
+    this.group.addEventListener('pointerdown', () => (this.pointer = true));
     this.group.addEventListener('click', (e) => {
-      const input = (e.target as HTMLElement).closest('label')?.querySelector('input');
-      if (input && input.value === this.value) this.close(true);
+      if (!this.pointer || !this.isOpen()) return;
+      this.pointer = false;
+      const t = e.target as HTMLElement;
+      const input = t instanceof HTMLInputElement ? t : t.closest('label')?.querySelector('input');
+      if (input) this.commit(input.value);
     });
     this.sheet.addEventListener('keydown', (e) => {
+      this.pointer = false;
       if (e.key === 'Escape') {
+        e.preventDefault();
         e.stopPropagation();
-        this.close(true);
+        this.close(true); // cancel: close() restores the committed value
+      } else if ((e.key === 'Enter' || e.key === ' ') && e.target instanceof HTMLInputElement) {
+        e.preventDefault();
+        this.commit(e.target.value);
       }
     });
+    // Tabbing (or any focus move) out of the sheet cancels it. Pointer clicks outside are handled by onOutside.
+    this.sheet.addEventListener('focusout', (e) => {
+      const next = e.relatedTarget as Node | null;
+      if (next && !this.el.contains(next)) this.close(false);
+    });
+  }
+
+  private commit(value: string): void {
+    this.close(true);
+    if (value !== this.value) this.onPick(value);
   }
 
   setOptions(options: PickerOption[]): void {
@@ -106,6 +122,7 @@ export class Picker {
 
   close(returnFocus: boolean): void {
     if (this.sheet.hidden) return;
+    this.syncChecked(); // drop any browsed-but-not-confirmed option
     this.sheet.hidden = true;
     this.button.setAttribute('aria-expanded', 'false');
     document.removeEventListener('pointerdown', this.onOutside, true);
