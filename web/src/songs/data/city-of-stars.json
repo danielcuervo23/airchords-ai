@@ -1,7 +1,7 @@
 {
   "id": "city-of-stars",
   "title": "City of Stars",
-  "artist": "Justin Hurwitz (La La Land)",
+  "artist": "Ryan Gosling & Emma Stone (La La Land)",
   "key": {
     "tonic": "D",
     "mode": "minor"
@@ -11,17 +11,17 @@
     {
       "degree": 4,
       "beats": 4,
-      "note": "Original (D menor): Gm7 → iv"
+      "note": "Orig. Re menor: Gm7 -> iv (7a quitada)"
     },
     {
       "degree": 7,
       "beats": 4,
-      "note": "Original: C7 → VII (sin la 7a)"
+      "note": "Orig: C7 -> VII (7a quitada)"
     },
     {
       "degree": 1,
       "beats": 4,
-      "note": "Original: Dm7 → i"
+      "note": "Orig: Dm7 -> i (7a quitada)"
     },
     {
       "degree": 1,
@@ -38,7 +38,7 @@
     {
       "degree": 3,
       "beats": 4,
-      "note": "Original: F → III"
+      "note": "Orig: F -> III"
     },
     {
       "degree": 3,
@@ -55,7 +55,7 @@
     {
       "degree": 3,
       "beats": 4,
-      "note": "Original: Fmaj7/F7 → III"
+      "note": "Orig: Fmaj7/F7 -> III (7a quitada)"
     },
     {
       "degree": 3,
@@ -68,37 +68,37 @@
     {
       "degree": 5,
       "beats": 4,
-      "note": "Original: A7 (dominante) → v menor natural"
+      "note": "Orig: A7 -> v: A mayor pasa a menor (escala natural)"
     },
     {
       "degree": 1,
       "beats": 4,
-      "note": "Original: Dm → i"
+      "note": "Orig: Dm -> i"
     },
     {
       "degree": 1,
       "beats": 4,
-      "note": "Original: Dm/C → i"
+      "note": "Orig: Dm/C -> i (bajo quitado)"
     },
     {
       "degree": 6,
       "beats": 4,
-      "note": "Estribillo. Original: Bb → VI"
+      "note": "Estribillo. Orig: Bb -> VI"
     },
     {
       "degree": 7,
       "beats": 4,
-      "note": "Original: C7 → VII"
+      "note": "Orig: C7 -> VII (7a quitada)"
     },
     {
       "degree": 5,
       "beats": 4,
-      "note": "Original: A7 → v menor natural"
+      "note": "Orig: A7 -> v: mayor pasa a menor (natural)"
     },
     {
       "degree": 1,
       "beats": 4,
-      "note": "Original: Dm7 → i"
+      "note": "Orig: Dm7 -> i"
     },
     {
       "degree": 6,

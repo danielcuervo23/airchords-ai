@@ -1,7 +1,7 @@
 {
   "id": "cant-take-my-eyes-off-you",
   "title": "Can't Take My Eyes Off You",
-  "artist": "Bob Crewe & Bob Gaudio",
+  "artist": "Frankie Valli",
   "key": {
     "tonic": "E",
     "mode": "major"
@@ -11,98 +11,72 @@
     {
       "degree": 1,
       "beats": 4,
-      "note": "Original (E mayor): E → I"
+      "note": "Orig. Mi mayor: E -> I"
     },
     {
       "degree": 1,
       "beats": 4,
-      "note": "Original: Emaj7 → I"
+      "note": "Orig: Emaj7 -> I"
     },
     {
       "degree": 1,
       "beats": 4,
-      "note": "Original: E7 → I"
+      "note": "Orig: E7 -> I"
     },
     {
       "degree": 4,
       "beats": 4,
-      "note": "Original: A → IV"
+      "note": "Orig: A -> IV"
     },
     {
       "degree": 4,
       "beats": 4,
-      "note": "Original: Adim7 → IV"
+      "note": "Orig: Adim7 -> IV (disminuido pasa a mayor)"
     },
     {
       "degree": 1,
       "beats": 4,
-      "note": "Original: E → I"
+      "note": "Orig: E -> I"
     },
     {
       "degree": 2,
       "beats": 4,
-      "note": "Original: F#7 (dominante secundaria) → ii"
+      "note": "Orig: F#7 -> ii: mayor pasa a menor (func. dom. sec.)"
     },
     {
       "degree": 2,
       "beats": 4,
-      "note": "Original: F#m7b5 → ii"
+      "note": "Orig: F#m7b5 -> ii (quinta y 7a quitadas)"
     },
     {
       "degree": 1,
       "beats": 4,
-      "note": "Original: Emaj7 → I"
+      "note": "Orig: Emaj7 -> I"
     },
     {
       "degree": 2,
       "beats": 4,
-      "note": "Estribillo. Original: F#m7 → ii"
-    },
-    {
-      "degree": 5,
-      "beats": 4,
-      "note": "Original: B7b9 → V"
-    },
-    {
-      "degree": 1,
-      "beats": 4,
-      "note": "Original: Emaj7#5 → I"
+      "note": "Estribillo (Hooktheory). Orig: F#m9 -> ii"
     },
     {
       "degree": 6,
       "beats": 4,
-      "note": "Original: C#7 (dominante secundaria) → vi"
-    },
-    {
-      "degree": 2,
-      "beats": 4
+      "note": "Orig: C#m7/G# (2a inv.) -> vi"
     },
     {
       "degree": 5,
-      "beats": 4
+      "beats": 4,
+      "note": "Orig: B13b9 -> V (extensiones quitadas)"
     },
     {
-      "degree": 1,
+      "degree": 3,
       "beats": 4,
-      "note": "Original: Emaj7/G# → I"
+      "note": "Orig: G#m7/D# -> iii"
     },
     {
       "degree": 6,
-      "beats": 4
-    },
-    {
-      "degree": 2,
-      "beats": 4
-    },
-    {
-      "degree": 4,
       "beats": 4,
-      "note": "Original: D7 (prestado, bVII) → IV"
-    },
-    {
-      "degree": 1,
-      "beats": 4,
-      "note": "Cierre: resuelto a I"
+      "note": "Orig: C#m7sus4 -> vi"
     }
   ]
 }

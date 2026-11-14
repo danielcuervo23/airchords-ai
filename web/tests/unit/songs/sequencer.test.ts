@@ -41,6 +41,12 @@ describe('GuidedSession', () => {
     expect(s.current().degree).toBe(1);
     expect(s.isDone()).toBe(false);
   });
+  it('current() stays on the last step when done', () => {
+    const s = new GuidedSession(song);
+    s.submit(1); s.submit(5); s.submit(6);
+    expect(s.isDone()).toBe(true);
+    expect(s.current().degree).toBe(6);
+  });
   it('throws for an empty song', () => {
     expect(() => new GuidedSession({ ...song, steps: [] })).toThrow(/sin pasos|no steps/i);
   });
@@ -57,6 +63,18 @@ describe('stepAtBeat', () => {
   it('loops or ends', () => {
     expect(stepAtBeat(steps, 9, true)?.index).toBe(0);
     expect(stepAtBeat(steps, 8, false)).toBeNull();
+  });
+  it('loops over several laps', () => {
+    expect(stepAtBeat(steps, 17, true)?.index).toBe(0);
+    expect(stepAtBeat(steps, 21, true)?.index).toBe(1);
+    expect(stepAtBeat(steps, 24, true)?.index).toBe(0);
+  });
+  it('is robust to float accumulation (three steps of 0.1)', () => {
+    const t: SongStep[] = [1, 2, 3].map((d) => ({ degree: d as 1 | 2 | 3, beats: 0.1 }));
+    expect(stepAtBeat(t, 0.3, false)).toBeNull();
+    expect(stepAtBeat(t, 0.3, true)?.index).toBe(0);
+    expect(stepAtBeat(t, 0.1 + 0.1, false)?.index).toBe(2);
+    expect(stepAtBeat(t, 0.2999999, false)?.index).toBe(2);
   });
   it('rejects negative and non-finite beats', () => {
     expect(stepAtBeat(steps, -1, true)).toBeNull();

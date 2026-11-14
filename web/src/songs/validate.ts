@@ -4,6 +4,7 @@ import type { Song, SongStep } from './types';
 const TONICS: readonly string[] = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const MODES: readonly string[] = ['major', 'minor'];
 const TOP_KEYS = ['id', 'title', 'artist', 'key', 'bpm', 'steps'];
+const MAX_NOTE = 80;
 const STEP_KEYS = ['degree', 'beats', 'note'];
 
 function fail(msg: string): never { throw new Error(`Canción inválida: ${msg}`); }
@@ -22,7 +23,7 @@ function validateStep(x: unknown, i: number): SongStep {
   const { degree, beats, note } = x;
   if (!Number.isInteger(degree) || (degree as number) < 1 || (degree as number) > 7) fail(`degree del paso ${i} debe ser 1-7`);
   if (typeof beats !== 'number' || !Number.isFinite(beats) || beats <= 0) fail(`beats del paso ${i} debe ser > 0`);
-  if (note !== undefined && typeof note !== 'string') fail(`note del paso ${i} debe ser texto`);
+  if (note !== undefined && (typeof note !== 'string' || note.length > MAX_NOTE)) fail(`note del paso ${i} debe ser texto de máximo ${MAX_NOTE} caracteres`);
   return note === undefined ? { degree: degree as Degree, beats } : { degree: degree as Degree, beats, note };
 }
 

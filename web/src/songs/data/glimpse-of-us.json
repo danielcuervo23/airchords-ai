@@ -3,7 +3,7 @@
   "title": "Glimpse of Us",
   "artist": "Joji",
   "key": {
-    "tonic": "G",
+    "tonic": "G#",
     "mode": "major"
   },
   "bpm": 93,
@@ -11,22 +11,22 @@
     {
       "degree": 6,
       "beats": 4,
-      "note": "Original (Ab mayor): Fm7 → vi. Transpuesto a Sol mayor"
+      "note": "Orig. Lab mayor (= Sol# mayor): Fm7 -> vi (7a quitada)"
     },
     {
       "degree": 2,
       "beats": 4,
-      "note": "Original: Bbm7 → ii"
+      "note": "Orig: Bbm7 -> ii (7a quitada)"
     },
     {
       "degree": 5,
       "beats": 4,
-      "note": "Original: Eb7 → V"
+      "note": "Orig: Eb7 -> V (7a quitada)"
     },
     {
       "degree": 1,
       "beats": 4,
-      "note": "Original: Abmaj7 → I"
+      "note": "Orig: Abmaj7 -> I (7a quitada)"
     },
     {
       "degree": 6,
@@ -45,52 +45,16 @@
       "beats": 4
     },
     {
-      "degree": 2,
-      "beats": 4
-    },
-    {
-      "degree": 5,
-      "beats": 4
-    },
-    {
-      "degree": 2,
-      "beats": 4
-    },
-    {
-      "degree": 4,
+      "degree": 1,
       "beats": 4,
-      "note": "Original: Db → IV"
+      "note": "Estribillo. Orig: Abmaj7 -> I"
     },
     {
       "degree": 5,
       "beats": 4
     },
     {
-      "degree": 2,
-      "beats": 4
-    },
-    {
-      "degree": 2,
-      "beats": 4
-    },
-    {
-      "degree": 5,
-      "beats": 4
-    },
-    {
-      "degree": 4,
-      "beats": 4
-    },
-    {
-      "degree": 5,
-      "beats": 4
-    },
-    {
-      "degree": 4,
-      "beats": 4
-    },
-    {
-      "degree": 5,
+      "degree": 6,
       "beats": 4
     },
     {
@@ -112,19 +76,6 @@
     {
       "degree": 6,
       "beats": 4
-    },
-    {
-      "degree": 2,
-      "beats": 4
-    },
-    {
-      "degree": 5,
-      "beats": 4
-    },
-    {
-      "degree": 1,
-      "beats": 4,
-      "note": "Cierre en I"
     }
   ]
 }

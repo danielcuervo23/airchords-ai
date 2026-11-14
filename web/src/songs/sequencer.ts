@@ -1,6 +1,9 @@
 import type { Degree } from '../music/theory';
 import type { Song, SongStep } from './types';
 
+/** Tolerance for float accumulation when summing fractional beats. */
+const EPS = 1e-9;
+
 export class GuidedSession {
   private index = 0;
   private readonly steps: readonly SongStep[];
@@ -34,12 +37,13 @@ export function stepAtBeat(
   if (!Number.isFinite(beat) || beat < 0 || steps.length === 0) return null;
   const total = steps.reduce((sum, s) => sum + s.beats, 0);
   if (!(total > 0)) return null;
-  if (!loop && beat >= total) return null;
-  const b = loop ? beat % total : beat;
+  if (!loop && beat >= total - EPS) return null;
+  let b = loop ? beat % total : beat;
+  if (loop && total - b < EPS) b = 0;
   let acc = 0;
   for (let i = 0; i < steps.length; i++) {
     acc += steps[i]!.beats;
-    if (b < acc) return { index: i, step: steps[i]! };
+    if (b < acc - EPS) return { index: i, step: steps[i]! };
   }
   return null;
 }
