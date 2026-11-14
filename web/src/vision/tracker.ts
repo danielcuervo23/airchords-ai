@@ -6,6 +6,14 @@ import { toRawHands } from './toRawHands';
 export interface FaceFrame { landmarks: Landmark[]; matrix: Float32Array /* 4x4 column-major */ }
 export interface VisionFrame { t: number; aspect: number; hands: RawHand[]; face: FaceFrame | null }
 
+/**
+ * MediaPipe's Left/Right labels are the opposite of the user's physical hands
+ * (assumes the model expects selfie-flipped input while we send raw frames).
+ * UNVERIFIED: confirm with a real camera at the user checkpoint and flip if wrong.
+ * Pass this as `labelsSwapped` to assignHands.
+ */
+export const HANDEDNESS_LABELS_SWAPPED = true;
+
 const BASE = `${import.meta.env.BASE_URL}mediapipe/`;
 const GESTURE_MODEL = `${BASE}models/gesture_recognizer.task`;
 const FACE_MODEL = `${BASE}models/face_landmarker.task`;
@@ -21,7 +29,8 @@ async function createGestures(fileset: Fileset): Promise<GestureRecognizer> {
     });
   try {
     return await make('GPU');
-  } catch {
+  } catch (e) {
+    console.warn('GPU delegate failed, falling back to CPU', e);
     return make('CPU');
   }
 }
@@ -36,13 +45,16 @@ async function createFace(fileset: Fileset): Promise<FaceLandmarker> {
     });
   try {
     return await make('GPU');
-  } catch {
+  } catch (e) {
+    console.warn('GPU delegate failed, falling back to CPU', e);
     return make('CPU');
   }
 }
 
 export class Tracker {
   private cancel: (() => void) | null = null;
+  private running = false;
+  private closed = false;
   private frameCount = 0;
   private lastFace: FaceFrame | null = null;
   private lastTs = -1;
@@ -56,16 +68,30 @@ export class Tracker {
 
   static async create(video: HTMLVideoElement, opts: { faceEveryNFrames?: number } = {}): Promise<Tracker> {
     const fileset = await FilesetResolver.forVisionTasks(`${BASE}wasm`);
-    const [gestures, faces] = await Promise.all([createGestures(fileset), createFace(fileset)]);
+    const [g, f] = await Promise.allSettled([createGestures(fileset), createFace(fileset)]);
+    if (g.status === 'rejected' || f.status === 'rejected') {
+      if (g.status === 'fulfilled') g.value.close();
+      if (f.status === 'fulfilled') f.value.close();
+      throw g.status === 'rejected' ? g.reason : (f as PromiseRejectedResult).reason;
+    }
+    const gestures = g.value;
+    const faces = f.value;
     return new Tracker(video, gestures, faces, Math.max(1, opts.faceEveryNFrames ?? 2));
   }
 
-  start(onFrame: (f: VisionFrame) => void): void {
+  start(onFrame: (f: VisionFrame) => void, onError?: (e: unknown) => void): void {
+    if (this.closed) return;
     this.stop();
+    this.running = true;
     const v = this.video;
     const tick = (): void => {
-      this.step(onFrame);
-      schedule();
+      if (!this.running) return;
+      try {
+        this.step(onFrame);
+      } catch (e) {
+        onError?.(e);
+      }
+      if (this.running) schedule();
     };
     const schedule = (): void => {
       if (typeof v.requestVideoFrameCallback === 'function') {
@@ -80,12 +106,15 @@ export class Tracker {
   }
 
   stop(): void {
+    this.running = false;
     this.cancel?.();
     this.cancel = null;
   }
 
   close(): void {
+    if (this.closed) return;
     this.stop();
+    this.closed = true;
     this.gestures.close();
     this.faces.close();
   }

@@ -31,15 +31,17 @@ function best(hands: RawHand[]): RawHand | null {
 }
 
 /**
- * The physical right hand plays chords. With a mirrored frame MediaPipe's
- * label 'Left' is the user's physical right hand; unmirrored it is 'Right'.
+ * The user's physical right hand plays the chords.
+ * `labelsSwapped` = MediaPipe's Left/Right labels are the opposite of the user's
+ * physical hands. When true, label 'Left' is the physical right hand (chordHand);
+ * when false, label 'Right' is.
  */
 export function assignHands(
   hands: RawHand[],
-  opts: { mirrored: boolean; minScore?: number },
+  opts: { labelsSwapped: boolean; minScore?: number },
 ): AssignedHands {
   const valid = hands.filter((h) => isValid(h, opts.minScore ?? DEFAULT_MIN_SCORE));
-  const chordLabel = opts.mirrored ? 'Left' : 'Right';
+  const chordLabel = opts.labelsSwapped ? 'Left' : 'Right';
   return {
     chordHand: best(valid.filter((h) => h.label === chordLabel)),
     expressionHand: best(valid.filter((h) => h.label !== chordLabel)),

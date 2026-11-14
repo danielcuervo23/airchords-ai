@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "predev": "npm run fetch:mediapipe",
     "fetch:mediapipe": "node scripts/fetch-mediapipe.mjs",
     "prebuild": "npm run fetch:mediapipe",
     "build": "tsc --noEmit && vite build",
