@@ -1,0 +1,57 @@
+import { describe, expect, it } from 'vitest';
+import { parseRecording, serializeRecording, type Recording } from '../../../src/dev/recording';
+
+const lm = (i: number) => ({ x: 0.1 + i / 100, y: 0.5, z: -0.01 });
+const hand = (label: 'Left' | 'Right') => ({
+  label,
+  score: 0.9,
+  landmarks: Array.from({ length: 21 }, (_, i) => lm(i)),
+  gesture: { name: 'Victory' as const, score: 0.8 },
+});
+const sample = (): Recording => ({
+  gesture: 2,
+  device: 'test-cam',
+  labelsSwapped: true,
+  aspect: 1.5,
+  frames: [
+    { t: 0, hands: [hand('Left')] },
+    { t: 33, hands: [] },
+  ],
+});
+
+describe('recording round trip', () => {
+  it('parse(serialize(x)) equals x', () => {
+    expect(parseRecording(serializeRecording(sample()))).toEqual(sample());
+  });
+  it('accepts gesture none and a null gesture guess', () => {
+    const r = sample();
+    r.gesture = 'none';
+    r.frames[0]!.hands[0]!.gesture = null as never;
+    expect(parseRecording(serializeRecording(r))).toEqual(r);
+  });
+  it('stores only landmarks and guesses, no image data', () => {
+    const json = serializeRecording(sample());
+    expect(json).not.toMatch(/data:image|base64|imageData/i);
+    expect(Object.keys(JSON.parse(json)).sort()).toEqual(['aspect', 'device', 'frames', 'gesture', 'labelsSwapped']);
+  });
+});
+
+describe('parseRecording rejects invalid data', () => {
+  const bad = (mutate: (r: any) => void): string => {
+    const r: any = JSON.parse(serializeRecording(sample()));
+    mutate(r);
+    return JSON.stringify(r);
+  };
+  it('rejects non-JSON', () => expect(() => parseRecording('{nope')).toThrow(/JSON/));
+  it('rejects non-object', () => expect(() => parseRecording('42')).toThrow(/grabaci|recording/i));
+  it('rejects unknown gesture', () => expect(() => parseRecording(bad((r) => (r.gesture = 9)))).toThrow(/gesture/));
+  it('rejects 20 landmarks', () =>
+    expect(() => parseRecording(bad((r) => r.frames[0].hands[0].landmarks.pop()))).toThrow(/21/));
+  it('rejects non-finite numbers', () =>
+    expect(() => parseRecording(bad((r) => (r.frames[0].hands[0].landmarks[3].x = null)))).toThrow(/finite|número/));
+  it('rejects bad label', () =>
+    expect(() => parseRecording(bad((r) => (r.frames[0].hands[0].label = 'Mid')))).toThrow(/label/));
+  it('rejects missing frames', () => expect(() => parseRecording(bad((r) => delete r.frames))).toThrow(/frames/));
+  it('rejects unknown gesture name in a guess', () =>
+    expect(() => parseRecording(bad((r) => (r.frames[0].hands[0].gesture.name = 'Wave')))).toThrow(/gesture/));
+});

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Grabador de señas (solo pruebas)</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 640px; margin: 1rem auto; padding: 0 1rem; }
+      video { width: 100%; transform: scaleX(-1); background: #111; border-radius: 8px; }
+      select, button { font-size: 1.1rem; padding: 0.5rem 0.75rem; margin: 0.25rem 0; }
+      #status { font-size: 1.4rem; font-weight: 600; min-height: 2rem; }
+      #readout { padding: 0.5rem; border-radius: 6px; background: #eef; }
+      #error { color: #b00020; font-weight: 600; }
+    </style>
+  </head>
+  <body>
+    <h1>Grabador de señas</h1>
+    <p><strong>Levanta SOLO tu mano derecha: debe decir "mano de acordes". Si dice otra cosa, avísale a Claude.</strong></p>
+    <p id="error" role="alert"></p>
+    <video id="video" autoplay playsinline muted></video>
+    <div id="readout" aria-live="polite">Cargando el reconocedor...</div>
+    <p>
+      <label>Seña a grabar:
+        <select id="gesture"></select>
+      </label>
+    </p>
+    <button id="record" type="button" disabled>Grabar (cuenta 3, graba 3 s)</button>
+    <p id="status" aria-live="polite"></p>
+    <script type="module" src="/src/dev/recorder.ts"></script>
+  </body>
+</html>
