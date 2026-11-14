@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseRecording, serializeRecording, type Recording } from '../../../src/dev/recording';
+import { hasAnyHand, parseRecording, rebaseTime, serializeRecording, type Recording } from '../../../src/dev/recording';
 
 const lm = (i: number) => ({ x: 0.1 + i / 100, y: 0.5, z: -0.01 });
 const hand = (label: 'Left' | 'Right') => ({
@@ -42,16 +42,28 @@ describe('parseRecording rejects invalid data', () => {
     mutate(r);
     return JSON.stringify(r);
   };
-  it('rejects non-JSON', () => expect(() => parseRecording('{nope')).toThrow(/JSON/));
-  it('rejects non-object', () => expect(() => parseRecording('42')).toThrow(/grabaci|recording/i));
-  it('rejects unknown gesture', () => expect(() => parseRecording(bad((r) => (r.gesture = 9)))).toThrow(/gesture/));
+  it('rejects non-JSON', () => expect(() => parseRecording('{nope')).toThrow(/no es JSON válido/));
+  it('rejects non-object', () => expect(() => parseRecording('42')).toThrow(/debe ser un objeto/));
+  it('rejects unknown gesture', () => expect(() => parseRecording(bad((r) => (r.gesture = 9)))).toThrow(/gesture debe ser 1 a 7/));
   it('rejects 20 landmarks', () =>
     expect(() => parseRecording(bad((r) => r.frames[0].hands[0].landmarks.pop()))).toThrow(/21/));
   it('rejects non-finite numbers', () =>
-    expect(() => parseRecording(bad((r) => (r.frames[0].hands[0].landmarks[3].x = null)))).toThrow(/finite|número/));
+    expect(() => parseRecording(bad((r) => (r.frames[0].hands[0].landmarks[3].x = null)))).toThrow(/debe ser un número finito/));
   it('rejects bad label', () =>
-    expect(() => parseRecording(bad((r) => (r.frames[0].hands[0].label = 'Mid')))).toThrow(/label/));
-  it('rejects missing frames', () => expect(() => parseRecording(bad((r) => delete r.frames))).toThrow(/frames/));
+    expect(() => parseRecording(bad((r) => (r.frames[0].hands[0].label = 'Mid')))).toThrow(/label debe ser Left o Right/));
+  it('rejects missing frames', () => expect(() => parseRecording(bad((r) => delete r.frames))).toThrow(/frames debe ser una lista/));
   it('rejects unknown gesture name in a guess', () =>
-    expect(() => parseRecording(bad((r) => (r.frames[0].hands[0].gesture.name = 'Wave')))).toThrow(/gesture/));
+    expect(() => parseRecording(bad((r) => (r.frames[0].hands[0].gesture.name = 'Wave')))).toThrow(/gesture\.name desconocido/));
+});
+
+describe('helpers', () => {
+  it('hasAnyHand is false when no frame has a hand', () => {
+    expect(hasAnyHand([{ t: 0, hands: [] }])).toBe(false);
+    expect(hasAnyHand(sample().frames)).toBe(true);
+  });
+  it('rebaseTime makes t relative to the first frame', () => {
+    const f = rebaseTime([{ t: 1000, hands: [] }, { t: 1033, hands: [] }]);
+    expect(f.map((x) => x.t)).toEqual([0, 33]);
+    expect(rebaseTime([])).toEqual([]);
+  });
 });

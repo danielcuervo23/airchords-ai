@@ -21,9 +21,13 @@ describe('vercel.json headers', () => {
     expect(get(all, 'Permissions-Policy')).toBe('camera=(self), microphone=()'));
   it('Referrer-Policy', () => expect(get(all, 'Referrer-Policy')).toBe('no-referrer'));
   it('nosniff', () => expect(get(all, 'X-Content-Type-Options')).toBe('nosniff'));
-  it.each(['/mediapipe/(.*)', '/assets/(.*)'])('immutable cache for %s', (source) => {
-    const cc = get(cfg.headers.find((h) => h.source === source), 'Cache-Control');
+  it('immutable cache only for hashed /assets', () => {
+    const cc = get(cfg.headers.find((h) => h.source === '/assets/(.*)'), 'Cache-Control');
     expect(cc).toContain('immutable');
     expect(cc).toContain('max-age=31536000');
+  });
+  it('unhashed /mediapipe is revalidated, not immutable', () => {
+    const cc = get(cfg.headers.find((h) => h.source === '/mediapipe/(.*)'), 'Cache-Control');
+    expect(cc).toBe('public, max-age=86400, stale-while-revalidate=604800');
   });
 });

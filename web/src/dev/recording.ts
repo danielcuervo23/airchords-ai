@@ -19,11 +19,11 @@ const GESTURES: readonly string[] = [
 ] satisfies GestureName[];
 
 const fail = (msg: string): never => {
-  throw new Error(`Grabación inválida (recording): ${msg}`);
+  throw new Error(`Grabación inválida: ${msg}`);
 };
 const isObj = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 const num = (v: unknown, what: string): number =>
-  typeof v === 'number' && Number.isFinite(v) ? v : fail(`${what} debe ser un número finite (número finito)`);
+  typeof v === 'number' && Number.isFinite(v) ? v : fail(`${what} debe ser un número finito`);
 
 function checkHand(h: unknown, where: string): RawHand {
   if (!isObj(h)) return fail(`${where} no es un objeto`);
@@ -39,11 +39,19 @@ function checkHand(h: unknown, where: string): RawHand {
   let gesture: RawHand['gesture'] = null;
   if (h.gesture !== null && h.gesture !== undefined) {
     const g = h.gesture;
-    if (!isObj(g) || typeof g.name !== 'string' || !GESTURES.includes(g.name)) fail(`${where}.gesture.name desconocido (gesture)`);
+    if (!isObj(g) || typeof g.name !== 'string' || !GESTURES.includes(g.name)) fail(`${where}.gesture.name desconocido`);
     const gg = g as Record<string, unknown>;
     gesture = { name: gg.name as GestureName, score: num(gg.score, `${where}.gesture.score`) };
   }
   return { label: h.label as 'Left' | 'Right', score, landmarks, gesture };
+}
+
+export const hasAnyHand = (frames: RecordedFrame[]): boolean => frames.some((f) => f.hands.length > 0);
+
+/** Makes `t` relative to the first frame. */
+export function rebaseTime(frames: RecordedFrame[]): RecordedFrame[] {
+  const t0 = frames[0]?.t ?? 0;
+  return frames.map((f) => ({ ...f, t: f.t - t0 }));
 }
 
 export function serializeRecording(rec: Recording): string {
@@ -55,7 +63,7 @@ export function parseRecording(json: string): Recording {
   try {
     raw = JSON.parse(json);
   } catch {
-    return fail('no es JSON válido (JSON)');
+    return fail('no es JSON válido');
   }
   if (!isObj(raw)) return fail('la grabación debe ser un objeto');
   if (raw.gesture !== 'none' && !(typeof raw.gesture === 'number' && DEGREES.includes(raw.gesture))) {

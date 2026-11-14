@@ -1,7 +1,7 @@
 import { assignHands } from '../gestures/assignHands';
 import { degreeFromGesture } from '../gestures/degree';
 import { HANDEDNESS_LABELS_SWAPPED, Tracker, type VisionFrame } from '../vision/tracker';
-import { serializeRecording, type Recording, type RecordedFrame } from './recording';
+import { hasAnyHand, rebaseTime, serializeRecording, type Recording, type RecordedFrame } from './recording';
 
 const OPTIONS: { value: string; label: string }[] = [
   { value: '1', label: '☝️ 1' },
@@ -62,21 +62,35 @@ function download(rec: Recording): void {
 async function record(): Promise<void> {
   button.disabled = true;
   select.disabled = true;
-  const value = select.value;
-  for (let i = COUNTDOWN_S; i > 0; i--) {
-    statusEl.textContent = `Prepárate... ${i}`;
-    await sleep(1000);
+  try {
+    const value = select.value;
+    for (let i = COUNTDOWN_S; i > 0; i--) {
+      statusEl.textContent = `Prepárate... ${i}`;
+      await sleep(1000);
+    }
+    statusEl.textContent = '🔴 Grabando...';
+    const raw: RecordedFrame[] = [];
+    sink = raw;
+    await sleep(RECORD_MS);
+    sink = null;
+    if (!hasAnyHand(raw)) {
+      statusEl.textContent = 'No se vio ninguna mano. Intenta de nuevo con más luz.';
+      return;
+    }
+    const frames = rebaseTime(raw);
+    const gesture = value === 'none' ? 'none' : (Number(value) as Recording['gesture']);
+    download({ gesture, device: navigator.userAgent, labelsSwapped: HANDEDNESS_LABELS_SWAPPED, aspect, frames });
+    statusEl.textContent = `Listo: ${frames.length} cuadros guardados. Se descargó el archivo.`;
+  } finally {
+    sink = null;
+    button.disabled = false;
+    select.disabled = false;
   }
-  statusEl.textContent = '🔴 Grabando...';
-  const frames: RecordedFrame[] = [];
-  sink = frames;
-  await sleep(RECORD_MS);
-  sink = null;
-  const gesture = value === 'none' ? 'none' : (Number(value) as Recording['gesture']);
-  download({ gesture, device: navigator.userAgent, labelsSwapped: HANDEDNESS_LABELS_SWAPPED, aspect, frames });
-  statusEl.textContent = `Listo: ${frames.length} cuadros guardados. Se descargó el archivo.`;
-  button.disabled = false;
-  select.disabled = false;
+}
+
+function stopStream(): void {
+  const stream = video.srcObject;
+  if (stream instanceof MediaStream) stream.getTracks().forEach((t) => t.stop());
 }
 
 async function openCamera(): Promise<boolean> {
@@ -105,6 +119,10 @@ async function main(): Promise<void> {
   }
   try {
     const tracker = await Tracker.create(video);
+    window.addEventListener('pagehide', () => {
+      tracker.close();
+      stopStream();
+    });
     tracker.start(onFrame, (e) => console.error('Error de seguimiento', e));
     readout.textContent = 'Mostrando tu mano...';
     button.disabled = false;
