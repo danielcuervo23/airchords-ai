@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { brightnessToHz, shiftOctave, strumIntervalMs, strumOffsets, volumeToDb } from '../../../src/audio/mapping';
+import { brightnessToHz, repeatIntervalMs, shiftOctave, strumIntervalMs, strumOffsets, volumeToDb } from '../../../src/audio/mapping';
 
 describe('brightnessToHz', () => {
   it('is exponential from 400 to 8000 Hz', () => {
@@ -52,8 +52,6 @@ describe('shiftOctave', () => {
     expect(shiftOctave(['C3'], 0)).toEqual(['C3']);
   });
 });
-
-import { repeatIntervalMs } from '../../../src/audio/mapping';
 
 describe('repeatIntervalMs', () => {
   it('strum presets repeat at one beat', () => {

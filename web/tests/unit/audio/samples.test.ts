@@ -9,6 +9,11 @@ const MAX_BYTES = 1.5 * 1024 * 1024;
 const credits = readFileSync(join(PUBLIC, 'CREDITS.md'), 'utf8');
 const folders = existsSync(SAMPLES) ? readdirSync(SAMPLES).filter((d) => statSync(join(SAMPLES, d)).isDirectory()) : [];
 
+/** Body of the `## <title>` section whose title is exactly `title` (not a prefix match). */
+function section(title: string): string | undefined {
+  return credits.split(/^## /m).find((s) => s.split(/\r?\n/)[0]!.trim() === title);
+}
+
 describe('samples', () => {
   it('every file a preset references exists', () => {
     for (const p of PRESETS.filter((x) => x.samples)) {
@@ -21,13 +26,14 @@ describe('samples', () => {
   it('has sample folders', () => {
     expect(folders.length).toBeGreaterThan(0);
   });
-  it('every sample folder is credited with author and license', () => {
+  it('every sample folder is credited (exact heading) with author, license, source and modifications', () => {
     for (const f of folders) {
-      const section = credits.split(/^## /m).find((s) => s.startsWith(`samples/${f}`));
-      expect(section, `CREDITS.md section for ${f}`).toBeTruthy();
-      expect(section).toMatch(/Autor:/);
-      expect(section).toMatch(/Licencia:/);
-      expect(section).toMatch(/https?:\/\//);
+      const s = section(`samples/${f}`);
+      expect(s, `CREDITS.md section for samples/${f}`).toBeTruthy();
+      expect(s).toMatch(/Autor:/);
+      expect(s).toMatch(/Licencia:/);
+      expect(s).toMatch(/Modificaciones:/);
+      expect(s).toMatch(/Fuente: https?:\/\//);
     }
   });
   it('credits the Spider-Man model', () => {
