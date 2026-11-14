@@ -20,6 +20,9 @@ const DEFAULT_MIN_SCORE = 0.6;
 export function degreeFromGesture(g: GestureGuess | null, minScore: number = DEFAULT_MIN_SCORE): Degree | null {
   if (g === null) return null;
   if (g.name === 'None') return null;
-  if (g.score < minScore) return null;
-  return GESTURE_TO_DEGREE[g.name];
+  // Written as a negated >= so that NaN fails closed (NaN < minScore is false).
+  if (!(g.score >= minScore)) return null;
+  // Runtime strings are not trusted: reject unknown names and inherited keys such as 'constructor'.
+  if (!Object.hasOwn(GESTURE_TO_DEGREE, g.name)) return null;
+  return GESTURE_TO_DEGREE[g.name as Exclude<GestureName, 'None'>];
 }
